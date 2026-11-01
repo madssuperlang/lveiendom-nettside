@@ -194,6 +194,9 @@ h2{font:700 clamp(30px,3.6vw,42px)/1.12 var(--font);letter-spacing:-.02em;margin
 .ticks.dark-ticks{margin:0 0 28px;flex-direction:column;gap:12px}
 .short .form{background:var(--grey)}
 @media (max-width:860px){.short .grid{grid-template-columns:1fr;gap:36px}}
+.film{padding-bottom:0}
+.filmbox{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--grey);aspect-ratio:16/9}
+.filmbox video{display:block;width:100%;height:100%;object-fit:cover}
 .faq{max-width:820px}
 .faq details{border-bottom:1px solid var(--line)}
 .faq details:first-child{border-top:1px solid var(--line)}
@@ -296,6 +299,18 @@ footer .legal{border-top:1px solid #2a2a2a;margin-top:48px;padding-top:22px;disp
         <li>Du har en eiendom du vil selge.</li>
         <li class="last">Da er det <u>oss</u> du skal ringe.</li>
       </ol>
+    </div>
+  </section>
+
+  <section class="film" aria-label="Film om lageret">
+    <div class="wrap">
+      <div class="head">
+        <h2>Fra stor garasje til liten bod</h2>
+        <p>En liten film om hvorfor et eget lager kan være lurt.</p>
+      </div>
+      <div class="filmbox">
+        <video src="video/lv-film.mp4" poster="video/lv-film.jpg" autoplay muted loop playsinline controls preload="metadata"></video>
+      </div>
     </div>
   </section>
 
