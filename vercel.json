@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "portal.lveiendom.no" }],
+      "destination": "https://claude.ai/code/artifact/9d1bbef3-6743-4fec-9d59-7010b6006eb5",
+      "permanent": false
+    }
+  ]
+}
