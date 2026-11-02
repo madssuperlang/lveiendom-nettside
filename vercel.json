@@ -1,10 +1,9 @@
 {
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "has": [{ "type": "host", "value": "portal.lveiendom.no" }],
-      "destination": "https://claude.ai/code/artifact/9d1bbef3-6743-4fec-9d59-7010b6006eb5",
-      "permanent": false
-    }
+  "rewrites": [
+    { "source": "/", "has": [{ "type": "host", "value": "portal.lveiendom.no" }], "destination": "/portal/index.html" }
+  ],
+  "headers": [
+    { "source": "/portal/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }, { "key": "X-Frame-Options", "value": "DENY" }] },
+    { "source": "/api/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
   ]
 }

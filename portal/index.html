@@ -1,0 +1,1051 @@
+<!doctype html><html lang="nb"><head><title>LV Eiendom – eierportal</title><meta name="robots" content="noindex,nofollow"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: fast sidemeny til venstre (som KRS Sykkel), innhold i kort til høyre. Mørkt først, messing som aksent. */
+:root{
+  --bg:#121514; --side:#0D100F; --panel:#1B1F1D; --panel-2:#232826; --line:#2F3532;
+  --fg:#EDF0EC; --mut:#98A29C; --acc:#D9A653; --acc-ink:#1B1406; --acc-soft:rgba(217,166,83,.13);
+  --ok:#5DBB86; --warn:#E2B443; --bad:#E8735F; --info:#86AEDC; --shade:rgba(0,0,0,.6);
+  --display:"Poppins","Helvetica Neue",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#EEF1EE; --side:#E2E7E3; --panel:#FFFFFF; --panel-2:#F3F5F3; --line:#D5DBD7;
+  --fg:#151917; --mut:#5A645F; --acc:#9C6A1C; --acc-ink:#FFFFFF; --acc-soft:rgba(156,106,28,.11);
+  --ok:#24804E; --warn:#8F6200; --bad:#B53B28; --info:#2F639C; --shade:rgba(20,25,22,.45);
+  color-scheme:light;
+}}
+:root[data-theme="light"]{
+  --bg:#EEF1EE; --side:#E2E7E3; --panel:#FFFFFF; --panel-2:#F3F5F3; --line:#D5DBD7;
+  --fg:#151917; --mut:#5A645F; --acc:#9C6A1C; --acc-ink:#FFFFFF; --acc-soft:rgba(156,106,28,.11);
+  --ok:#24804E; --warn:#8F6200; --bad:#B53B28; --info:#2F639C; --shade:rgba(20,25,22,.45);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--body)}
+a{color:var(--acc)}
+button{font:inherit}
+.tab{font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:272px minmax(0,1fr);min-height:100vh}
+.side{background:var(--side);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow:auto;
+  display:flex;flex-direction:column;padding-block:22px 18px;padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:14px}
+.brand{display:flex;align-items:center;gap:14px;padding:6px 12px 24px;text-decoration:none;color:var(--fg);font:700 20px/1 var(--display);letter-spacing:.01em;white-space:nowrap}
+.brand .bar{width:1px;height:36px;background:var(--fg);opacity:.75}
+.menu-btn{display:none;background:none;border:1.5px solid var(--line);color:var(--fg);border-radius:10px;padding:8px;cursor:pointer}
+.navwrap{display:flex;flex-direction:column;flex:1;gap:2px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--fg);text-decoration:none;font-weight:500}
+.nav a:hover{background:var(--panel)}
+.nav a.on{background:var(--acc-soft);color:var(--acc);box-shadow:inset 3px 0 0 var(--acc);font-weight:600}
+.nav .ng{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--mut);padding:20px 12px 8px}
+.badge{margin-left:auto;min-width:24px;height:24px;padding:0 7px;border-radius:999px;background:var(--panel-2);color:var(--fg);
+  display:inline-grid;place-items:center;font:700 12px/1 var(--body)}
+.badge.bad{background:var(--bad);color:var(--side)}
+.me{margin-top:auto;border-top:1px solid var(--line);padding:16px 10px 0;display:flex;align-items:center;gap:12px;min-width:0}
+.me img{width:36px;height:36px;border-radius:50%;flex:none}
+.me b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me span{font-size:13px;color:var(--mut)}
+
+.main{min-width:0;padding-block:28px 72px;padding-left:40px;padding-right:max(24px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;display:flex;flex-direction:column;gap:22px}
+.ph{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.ph .eb{font:600 13px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin:0 0 8px}
+h1{font:700 clamp(30px,4.2vw,46px)/1.05 var(--display);text-transform:uppercase;letter-spacing:.01em;margin:0;text-wrap:balance}
+.sub{color:var(--mut);margin:10px 0 0;max-width:62ch;font-size:17px}
+.ph-act{display:flex;gap:10px;flex-wrap:wrap}
+h2{font:700 20px/1.2 var(--display);text-transform:uppercase;letter-spacing:.02em;margin:0}
+h3{font:600 15px/1.2 var(--display);text-transform:uppercase;letter-spacing:.03em;margin:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.muted{color:var(--mut)}
+.small{font-size:14px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.kpi .l{font:600 12px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.kpi .v{font:700 27px/1.1 var(--display);margin-top:8px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:14px;color:var(--mut);margin-top:4px}
+.kpi.hl{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.kpi.hl .l,.kpi.hl .s{color:var(--acc-ink);opacity:.8}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:11px 22px;border:1.5px solid var(--line);
+  background:transparent;color:var(--fg);font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{border-color:var(--mut)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:var(--acc-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.sm{padding:6px 14px;font-size:14px}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
+.btn.danger.armed{background:var(--bad);color:var(--side);border-color:var(--bad)}
+.linkbtn{background:none;border:0;color:var(--acc);cursor:pointer;padding:0;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:600;
+  background:var(--panel-2);color:var(--mut);white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip.nodot::before{display:none}
+.chip.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.chip.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+.chip.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.chip.info{color:var(--info);background:color-mix(in srgb,var(--info) 14%,transparent)}
+.chip.acc{color:var(--acc);background:var(--acc-soft)}
+
+.tw{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.tbl th{font:600 12px/1.2 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--mut);text-align:left;padding:0 12px 10px;white-space:nowrap}
+.tbl td{border-top:1px solid var(--line);padding:12px;vertical-align:middle}
+.tbl .r{text-align:right;white-space:nowrap}
+.tbl tr.sum td{font-weight:700;border-top:2px solid var(--line)}
+.tbl tr.em td{font-weight:700}
+.tbl tr.em td:first-child{color:var(--acc)}
+.tbl tr.click{cursor:pointer}
+.tbl tr.click:hover td{background:var(--panel-2)}
+.neg{color:var(--bad)}
+
+.att{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.att a{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;background:var(--panel-2);
+  color:var(--fg);text-decoration:none;border-left:3px solid var(--info)}
+.att a:hover{filter:brightness(1.06)}
+.att .s3{border-left-color:var(--bad)}.att .s2{border-left-color:var(--warn)}
+.att .m{color:var(--mut);font-size:14px;white-space:nowrap}
+
+.empty{border:1.5px dashed var(--line);border-radius:16px;padding:28px;text-align:center;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty b{color:var(--fg);font-size:17px}
+
+.prop .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.prop .addr{color:var(--mut);font-size:15px;margin-top:4px}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:18px 0}
+.fig{background:var(--panel-2);padding:11px 13px;min-width:0}
+.fig .l{font-size:12px;color:var(--mut);letter-spacing:.04em}
+.fig .v{font:600 16px/1.3 var(--display);font-variant-numeric:tabular-nums;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finn{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--acc-soft);font-size:14px}
+.finn b{font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:15px;margin:14px 0}
+.dl dt{color:var(--mut)} .dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.dots{display:flex;gap:5px}
+.dots i{width:22px;height:8px;border-radius:4px;background:var(--line)}
+.dots i.ok{background:var(--ok)}.dots i.bad{background:var(--bad)}.dots i.warn{background:var(--warn)}
+
+.segs{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px;gap:4px}
+.segs button{background:none;border:0;color:var(--fg);padding:8px 18px;border-radius:999px;font-weight:600;cursor:pointer}
+.segs button.on{background:var(--acc);color:var(--acc-ink)}
+.mnav{display:flex;align-items:center;gap:8px}
+.mnav b{font:700 18px/1 var(--display);text-transform:uppercase;min-width:170px;text-align:center}
+.iconbtn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:none;color:var(--fg);cursor:pointer;font-size:20px;line-height:1}
+
+.task{display:flex;gap:14px;align-items:flex-start;padding:14px 4px;border-top:1px solid var(--line)}
+.task:first-child{border-top:0}
+.check{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--mut);background:none;cursor:pointer;display:grid;place-items:center;color:var(--acc-ink);margin-top:1px}
+.check.on{background:var(--ok);border-color:var(--ok)}
+.task .body{flex:1;min-width:0;cursor:pointer}
+.task .t{font-weight:600;font-size:17px}
+.task.done .t{text-decoration:line-through;color:var(--mut)}
+.task .meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--mut);margin-top:4px}
+.task .note{font-size:14px;color:var(--mut);margin-top:6px;max-width:70ch}
+
+.mb{position:fixed;inset:0;background:var(--shade);z-index:50;overflow:auto;display:flex;justify-content:center;align-items:flex-start;
+  padding:max(40px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:20px;width:min(700px,100%);padding:26px}
+.mh{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.x{background:none;border:0;color:var(--mut);font-size:30px;line-height:1;cursor:pointer;padding:0 4px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld.full,.fsec{grid-column:1/-1}
+.fsec{margin:12px 0 -2px;color:var(--acc);font-size:16px}
+.lab{font-weight:600;font-size:14px}
+.lab em{font-style:normal;color:var(--mut);font-weight:500}
+.hint{font-size:13px;color:var(--mut)}
+.inp{width:100%;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;color:var(--fg);font:16px/1.4 var(--body)}
+.inp:focus{border-color:var(--acc);outline:none}
+textarea.inp{resize:vertical}
+.mf{display:flex;gap:10px;align-items:center;margin-top:22px;flex-wrap:wrap}
+.mf .sp{flex:1}
+.ferr{color:var(--bad);font-size:14px;margin-top:12px}
+.pp{position:relative}
+.pp-list{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--panel);border:1px solid var(--line);border-radius:12px;z-index:5;overflow:hidden;box-shadow:0 12px 30px var(--shade)}
+.pp-list button{display:flex;gap:10px;align-items:center;width:100%;padding:9px 12px;background:none;border:0;color:var(--fg);cursor:pointer;text-align:left}
+.pp-list button:hover{background:var(--panel-2)}
+.pp-list img{width:24px;height:24px;border-radius:50%}
+.pp-list .none{padding:10px 12px;color:var(--mut);font-size:14px}
+
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+.auth .card{width:min(440px,100%);padding:32px}
+.auth .brand{padding:0 0 22px}
+.auth form{display:flex;flex-direction:column;gap:14px}
+.auth .btn{width:100%;margin-top:6px}
+.auth p{margin:0 0 6px;color:var(--mut)}
+.me .acts{display:flex;gap:12px;margin-top:4px}
+.me .acts .linkbtn{font-size:13px}
+.copy{display:flex;gap:8px}.copy .inp{font-size:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:max(24px,calc(env(safe-area-inset-bottom,0px) + 12px));background:var(--fg);color:var(--bg);
+  padding:12px 20px;border-radius:999px;font-weight:600;z-index:60;max-width:calc(100% - 32px)}
+.toast.err{background:var(--bad);color:var(--side)}
+.note-bar{padding:12px 16px;border-radius:12px;background:var(--panel-2);color:var(--mut);font-size:15px}
+
+.sb-fil{display:flex;gap:12px;align-items:center;padding:10px 14px;border-radius:12px;background:var(--panel-2);border-left:3px solid var(--acc);min-height:48px}
+.sb-fil b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-fil .linkbtn{margin-left:auto}
+.sb-eb{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin:0 0 6px}
+.sb-merk{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.iconbtn:disabled{opacity:.35;cursor:default}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2{grid-template-columns:1fr}}
+@media (max-width:900px){
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--side)}
+  .app{grid-template-columns:1fr}
+  .side{position:sticky;top:env(safe-area-inset-top,0px);height:auto;z-index:20;flex-direction:row;flex-wrap:wrap;align-items:center;overflow:visible;
+    border-right:0;border-bottom:1px solid var(--line);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .brand{padding:0}
+  .menu-btn{display:inline-flex;margin-left:auto}
+  .navwrap{display:none;width:100%;padding-top:10px;max-height:75vh;overflow:auto}
+  .side.open .navwrap{display:flex}
+  .main{padding-block:22px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+}
+@media (max-width:640px){
+  .kpis{grid-template-columns:1fr 1fr}.kpi .v{font-size:21px}
+  .figs{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fgrid{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr}
+  .card{padding:18px}
+  .mnav b{min-width:0}
+}
+@media (prefers-reduced-motion:no-preference){.btn,.nav a{transition:background .15s,border-color .15s,filter .15s}}
+</style>
+
+<div class="app">
+  <aside class="side" id="side">
+    <a class="brand" href="#oversikt" aria-label="LV Eiendom AS – til oversikten"><span>LV</span><span class="bar"></span><span>EIENDOM AS</span></a>
+    <button class="menu-btn" data-act="menu" aria-label="Meny" aria-expanded="false"></button>
+    <div class="navwrap">
+      <nav class="nav" id="nav"></nav>
+      <div class="me" id="me"></div>
+    </div>
+  </aside>
+  <main class="main"><div class="wrap" id="view"><p class="muted">Henter data …</p></div></main>
+</div>
+<div class="mb" id="mb" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- hjelpere ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf = new Intl.NumberFormat('nb-NO', {maximumFractionDigits:0});
+const nfIn = new Intl.NumberFormat('nb-NO', {maximumFractionDigits:2});
+const num = v => { if (typeof v === 'number') return v; const n = parseFloat(String(v ?? '').replace(/[\s  ]/g,'').replace(',','.')); return isNaN(n) ? 0 : n; };
+const kr = n => (n == null || !isFinite(n)) ? '–' : nf.format(Math.round(n)) + ' kr';
+const krS = n => { if (n == null || !isFinite(n)) return '–'; const a=Math.abs(n); return a >= 1e6 ? (n/1e6).toLocaleString('nb-NO',{maximumFractionDigits:2})+' mill.' : kr(n); };
+const pct = n => isFinite(n) ? (n*100).toLocaleString('nb-NO',{minimumFractionDigits:1,maximumFractionDigits:1}) + ' %' : '–';
+const pad = n => String(n).padStart(2,'0');
+const isoOf = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const todayISO = () => isoOf(new Date());
+const curYM = () => todayISO().slice(0,7);
+const pDate = iso => new Date(iso + 'T00:00:00');
+const fmtDate = iso => iso ? new Intl.DateTimeFormat('nb-NO',{day:'numeric',month:'short',year:'numeric'}).format(pDate(iso)) : '–';
+const daysUntil = iso => Math.round((pDate(iso) - pDate(todayISO())) / 864e5);
+const mLabel = ym => { const [y,m] = ym.split('-').map(Number); return new Intl.DateTimeFormat('nb-NO',{month:'long',year:'numeric'}).format(new Date(y,m-1,1)); };
+const mShort = ym => { const [y,m] = ym.split('-').map(Number); return new Intl.DateTimeFormat('nb-NO',{month:'short'}).format(new Date(y,m-1,1)); };
+const shiftYM = (ym, d) => { const [y,m] = ym.split('-').map(Number); const t = new Date(y, m-1+d, 1); return t.getFullYear()+'-'+pad(t.getMonth()+1); };
+function months(from, to){ const out=[]; let ym=from, g=0; while (ym <= to && g++ < 240){ out.push(ym); ym = shiftYM(ym,1); } return out; }
+const sum = (arr, f) => arr.reduce((a,x) => a + (f(x) || 0), 0);
+
+/* ---------- ikoner ---------- */
+const ICON = {
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  tasks:'<path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5"/>',
+  building:'<path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16"/><path d="M15 9h4a1 1 0 0 1 1 1v11"/><path d="M2.5 21h19M8 8h3M8 12h3M8 16h3"/>',
+  people:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.8.7 3 2.5 3.5 5.2"/>',
+  pay:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',
+  chart:'<path d="M5 20V11M11 20V5M17 20v-6M2.5 20h19"/>',
+  shield:'<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',
+  tick:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  ledger:'<path d="M6 3h12a1 1 0 0 1 1 1v17H7a2 2 0 0 1-2-2V4a1 1 0 0 1 1-1z"/><path d="M9 8h7M9 12h7M9 16h4"/>'
+};
+const ico = (n, s=20) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+$('.menu-btn').innerHTML = ico('menu', 22);
+
+/* ---------- tilstand ---------- */
+const COLS = ['eiendommer','leietakere','betalinger','gjoremal','forsikringer','poster','saldobalanser'];
+const S = {}; COLS.forEach(c => S[c] = null);
+let db = null, user = null, me = null, canWrite = false, offline = false;
+let payYM = curYM(), taskTab = 'open';
+
+/* ---------- beregninger ---------- */
+const eById = id => (S.eiendommer || []).find(e => e.id === id);
+const eNavn = id => eById(id)?.navn || 'Generelt';
+const erAktiv = (l, ym) => { const s = (l.kontraktStart || '0000-01').slice(0,7), e = (l.kontraktSlutt || '9999-12').slice(0,7); return s <= ym && ym <= e; };
+const aktive = (eid, ym = curYM()) => (S.leietakere || []).filter(l => l.eiendomId === eid && erAktiv(l, ym));
+const forsikringAr = eid => sum((S.forsikringer || []).filter(f => f.eiendomId === eid), f => num(f.premieAr));
+function calc(e){
+  const total = num(e.kjopesum)+num(e.dokumentavgift)+num(e.etablering)+num(e.omkostninger)+num(e.oppgradering);
+  const kontrakt = sum(aktive(e.id), l => num(l.leieMnd)) * 12;
+  const leie = kontrakt > 0 ? kontrakt : num(e.budsjettLeieAr);
+  const felles = num(e.felleskostMnd)*12, fors = forsikringAr(e.id), andre = num(e.andreKostAr);
+  const drift = felles + fors + andre, netto = leie - drift, rente = num(e.renteAr), etterRente = netto - rente, avdrag = num(e.avdragAr), cash = etterRente - avdrag;
+  const ek = num(e.egenkapital), lan = num(e.lan), verdi = num(e.verdi) || total;
+  return { total, kontrakt, leie, kilde: kontrakt > 0 ? 'kontrakt' : 'budsjett', felles, fellesUkjent: e.felleskostMnd == null || e.felleskostMnd === '', fors, andre, drift, netto, rente, etterRente, avdrag, cash, ek, lan, verdi,
+    yld: total ? leie/total : NaN, roe: ek ? etterRente/ek : NaN, ltv: verdi ? lan/verdi : NaN, ledig: kontrakt === 0 };
+}
+const betaling = (l, ym) => (S.betalinger || []).find(b => b.leietakerId === l.id && b.periode === ym);
+const forfall = (l, ym) => ym + '-' + pad(Math.min(28, Math.max(1, num(l.forfallsdag) || 1)));
+function status(l, ym){
+  const b = betaling(l, ym);
+  if (b && num(b.belop) >= num(l.leieMnd)) return {k:'betalt', b};
+  if (b) return {k:'delvis', b};
+  return todayISO() > forfall(l, ym) ? {k:'forfalt'} : {k:'venter'};
+}
+const STATUS = { betalt:['ok','Betalt'], delvis:['warn','Delvis betalt'], forfalt:['bad','Forfalt'], venter:['nodot','Ikke forfalt'] };
+function utestaende(){
+  const out = [], cur = curYM();
+  for (const l of S.leietakere || []){
+    const start = [(l.kontraktStart || '').slice(0,7), l.betalingFra || cur].filter(Boolean).sort().pop();
+    for (const ym of months(start, cur)){
+      if (!erAktiv(l, ym)) continue;
+      const s = status(l, ym);
+      if (s.k === 'forfalt' || (s.k === 'delvis' && todayISO() > forfall(l, ym))) out.push({l, ym, rest: num(l.leieMnd) - num(s.b?.belop)});
+    }
+  }
+  return out;
+}
+const viaSameie = f => f.ordning === 'Gjennom sameiet';
+const forsMangler = f => !viaSameie(f) && (!f.selskap || !f.polisenr || !f.fornyes);
+
+/* ---------- skjemaer ---------- */
+const eiendomOpts = (generelt) => () => [...(generelt ? [['', 'Generelt / hele selskapet']] : []), ...(S.eiendommer || []).map(e => [e.id, e.navn])];
+const FORMS = {
+  eiendommer:{ new:'Ny eiendom', edit:'Rediger eiendom', f:[
+    {k:'navn',l:'Navn',req:1},{k:'type',l:'Type',t:'select',o:['Kontor/lager','Lager','Kontor','Næring','Bolig','Annet']},
+    {k:'adresse',l:'Adresse',full:1},{k:'m2',l:'Størrelse',u:'m²',t:'num'},{k:'kjopsdato',l:'Kjøpt',t:'date'},
+    {sec:'Kjøp'},
+    {k:'kjopesum',l:'Kjøpesum',u:'kr',t:'num'},{k:'dokumentavgift',l:'Dokumentavgift',u:'kr',t:'num'},
+    {k:'etablering',l:'Etablering lån',u:'kr',t:'num'},{k:'omkostninger',l:'Omkostninger',u:'kr',t:'num'},
+    {k:'oppgradering',l:'Oppgraderinger',u:'kr',t:'num'},{k:'oppgraderingTekst',l:'Hva ble oppgradert'},
+    {sec:'Finansiering'},
+    {k:'lan',l:'Lån',u:'kr',t:'num'},{k:'egenkapital',l:'Egenkapital',u:'kr',t:'num'},
+    {k:'bank',l:'Bank'},{k:'rentesats',l:'Rentesats',u:'%',t:'num'},
+    {k:'renteAr',l:'Rentekostnad per år',u:'kr',t:'num'},{k:'avdragAr',l:'Avdrag per år',u:'kr',t:'num'},
+    {sec:'Drift og verdi'},
+    {k:'budsjettLeieAr',l:'Budsjettert leie per år',u:'kr',t:'num',hint:'Brukes når lokalet står ledig'},{k:'felleskostMnd',l:'Felleskostnad per måned',u:'kr',t:'num',hint:'La stå tomt hvis den ikke er avklart. Skriv 0 hvis det ikke er felleskostnad.'},
+    {k:'andreKostAr',l:'Andre faste kostnader per år',u:'kr',t:'num'},{k:'verdi',l:'Estimert verdi i dag',u:'kr',t:'num'},
+    {k:'verdistigning',l:'Forventet verdistigning',u:'% per år',t:'num'},
+    {sec:'Annonse på FINN'},
+    {k:'finnKode',l:'FINN-kode'},{k:'annonseStatus',l:'Annonse',t:'select',o:['Ingen','Aktiv','Inaktiv']},
+    {k:'annonsePris',l:'Annonsert leie per måned',u:'kr',t:'num'},{k:'megler',l:'Kontaktperson på annonsen'},
+    {k:'notat',l:'Notat',t:'textarea',full:1}
+  ]},
+  leietakere:{ new:'Ny leietaker', edit:'Rediger leietaker', f:[
+    {k:'navn',l:'Leietaker (firma eller navn)',req:1,full:1},{k:'orgnr',l:'Org.nr.'},{k:'kontaktperson',l:'Kontaktperson'},
+    {k:'telefon',l:'Telefon',t:'tel'},{k:'epost',l:'E-post',t:'email'},
+    {k:'eiendomId',l:'Eiendom',t:'select',o:eiendomOpts(false),req:1,full:1},
+    {sec:'Kontrakt'},
+    {k:'leieMnd',l:'Månedsleie',u:'kr',t:'num',req:1},{k:'mva',l:'Mva på leien',t:'select',o:['Nei','Ja']},
+    {k:'kontraktStart',l:'Kontrakt fra',t:'date'},{k:'kontraktSlutt',l:'Kontrakt til',t:'date',hint:'Tomt betyr løpende'},
+    {k:'forfallsdag',l:'Forfall',u:'dag i måneden',t:'num'},{k:'indeksregulering',l:'Indeksregulering',t:'select',o:['KPI årlig','Ingen','Annet']},
+    {k:'sikkerhet',l:'Sikkerhet',t:'select',o:['Depositum','Bankgaranti','Selskapsgaranti','Ingen']},{k:'sikkerhetBelop',l:'Sikkerhet beløp',u:'kr',t:'num'},
+    {k:'betalingFra',l:'Følg opp betalinger fra',t:'month',hint:'Måneder før dette regnes ikke som utestående'},
+    {k:'notat',l:'Notat',t:'textarea',full:1}
+  ]},
+  betalinger:{ new:'Registrer innbetaling', edit:'Rediger innbetaling', f:[
+    {k:'belop',l:'Innbetalt beløp',u:'kr',t:'num',req:1},{k:'betaltDato',l:'Betalt dato',t:'date',req:1},
+    {k:'notat',l:'Notat',t:'textarea',full:1}
+  ]},
+  gjoremal:{ new:'Nytt gjøremål', edit:'Rediger gjøremål', extra:()=>({ferdig:false}), f:[
+    {k:'tittel',l:'Hva skal gjøres',req:1,full:1},
+    {k:'eiendomId',l:'Gjelder',t:'select',o:eiendomOpts(true)},{k:'frist',l:'Frist',t:'date'},
+    {k:'ansvarlig',l:'Ansvarlig',t:'person'},{k:'prioritet',l:'Prioritet',t:'select',o:['Normal','Høy','Lav']},
+    {k:'notat',l:'Notat',t:'textarea',full:1}
+  ]},
+  forsikringer:{ new:'Ny forsikring', edit:'Rediger forsikring', f:[
+    {k:'eiendomId',l:'Eiendom',t:'select',o:eiendomOpts(true)},{k:'ordning',l:'Ordning',t:'select',o:['Egen polise','Gjennom sameiet'],hint:'Gjennom sameiet: premien er en del av felleskostnaden'},
+    {k:'type',l:'Type',t:'select',o:['Huseier næringsbygg','Bygningsforsikring','Husleietap','Ansvarsforsikring','Styreansvar','Annet']},{k:'selskap',l:'Forsikringsselskap'},
+    {k:'polisenr',l:'Polisenummer'},{k:'premieAr',l:'Premie per år',u:'kr',t:'num'},
+    {k:'fornyes',l:'Fornyes',t:'date'},{k:'egenandel',l:'Egenandel',u:'kr',t:'num'},
+    {k:'notat',l:'Dekning og notater',t:'textarea',full:1}
+  ]},
+  saldobalanser:{ new:'Legg inn saldobalanse', edit:'Rediger saldobalanse', f:[
+    {k:'periode',l:'Måned',t:'month',req:1,hint:'Saldobalansen per utgangen av måneden'},
+    {k:'restgjeld',l:'Restgjeld bank',u:'kr',t:'num',hint:'Konto 2200–2249'},
+    {k:'gjeldTilOss',l:'Gjeld til oss (eierne)',u:'kr',t:'num',hint:'Aksjonærlån og mellomregning'},
+    {k:'bank',l:'Bankinnskudd',u:'kr',t:'num',hint:'Konto 1900–1999'},
+    {k:'inntekter',l:'Inntekter hittil i år',u:'kr',t:'num'},
+    {k:'kostnader',l:'Kostnader hittil i år',u:'kr',t:'num',hint:'Inkludert renter'},
+    {k:'resultat',l:'Resultat hittil i år',u:'kr',t:'num',hint:'Tomt = inntekter minus kostnader'},
+    {k:'notat',l:'Merknader',t:'textarea',full:1}
+  ]},
+  poster:{ new:'Ny post', edit:'Rediger post', f:[
+    {k:'type',l:'Type',t:'select',o:['Kostnad','Inntekt']},{k:'dato',l:'Dato',t:'date',req:1},
+    {k:'eiendomId',l:'Gjelder',t:'select',o:eiendomOpts(true)},
+    {k:'kategori',l:'Kategori',t:'select',o:['Vedlikehold','Felleskostnader','Kommunale avgifter','Strøm','Megler og annonse','Regnskap og revisjon','Bank og gebyrer','Annet']},
+    {k:'belop',l:'Beløp',u:'kr',t:'num',req:1},{k:'tekst',l:'Beskrivelse'},
+  ]}
+};
+
+function field(f, v){
+  if (f.sec) return `<h3 class="fsec">${esc(f.sec)}</h3>`;
+  const id = 'f_' + f.k, val = v == null ? '' : v;
+  let input;
+  if (f.t === 'select'){
+    const opts = typeof f.o === 'function' ? f.o() : f.o.map(x => [x, x]);
+    input = `<select id="${id}" class="inp">${opts.map(([ov, ol]) => `<option value="${esc(ov)}" ${String(ov) === String(val) ? 'selected' : ''}>${esc(ol)}</option>`).join('')}</select>`;
+  } else if (f.t === 'textarea') input = `<textarea id="${id}" class="inp" rows="3">${esc(val)}</textarea>`;
+  else if (f.t === 'person') input = `<div class="pp"><input id="${id}" class="inp" autocomplete="off" placeholder="${user ? 'Søk etter navn' : 'Ikke tilgjengelig her'}" ${user ? '' : 'disabled'} data-pid="${esc(val)}"><div class="pp-list" hidden></div></div>`;
+  else if (f.t === 'num') input = `<input id="${id}" class="inp tab" inputmode="decimal" value="${val === '' ? '' : esc(nfIn.format(num(val)))}">`;
+  else input = `<input id="${id}" class="inp" type="${f.t || 'text'}" value="${esc(val)}">`;
+  return `<label class="fld ${f.full ? 'full' : ''}" for="${id}"><span class="lab">${esc(f.l)}${f.u ? ` <em>(${esc(f.u)})</em>` : ''}</span>${input}${f.hint ? `<span class="hint">${esc(f.hint)}</span>` : ''}</label>`;
+}
+
+let M = null;
+function openForm(col, doc, defaults = {}, docId = null, extraHtml = ''){
+  const def = FORMS[col], d = doc || defaults;
+  $('#modal').innerHTML = `<form id="mform" novalidate>
+    <div class="mh"><h2>${esc(doc ? def.edit : def.new)}</h2><button type="button" class="x" data-act="close" aria-label="Lukk">×</button></div>
+    ${extraHtml}
+    <div class="fgrid">${def.f.map(f => field(f, d[f.k])).join('')}</div>
+    <div class="ferr" id="ferr" hidden></div>
+    <div class="mf">${doc && canWrite ? `<button type="button" class="btn danger" data-act="del">Slett</button>` : ''}<span class="sp"></span>
+      <button type="button" class="btn" data-act="close">${canWrite ? 'Avbryt' : 'Lukk'}</button>${canWrite ? `<button class="btn primary" type="submit">Lagre</button>` : ''}</div>
+  </form>`;
+  M = {col, doc, def, docId, armed:false};
+  $('#mb').hidden = false;
+  if (!canWrite) $('#mform').querySelectorAll('.inp').forEach(i => i.disabled = true);
+  setupPickers();
+  $('#mform').addEventListener('submit', saveForm);
+  const first = $('#mform .inp:not([disabled])'); if (first) first.focus();
+}
+function closeModal(){ $('#mb').hidden = true; $('#modal').innerHTML = ''; M = null; }
+function errMsg(e){
+  const c = e && e.code;
+  if (c === 'invalid_argument') return 'Kunne ikke lagre. Du har kanskje bare lesetilgang til portalen.';
+  if (c === 'quota_exceeded') return 'Databasen er full. Slett gamle poster og prøv igjen.';
+  return 'Kunne ikke lagre akkurat nå. Prøv igjen om litt.';
+}
+async function saveForm(ev){
+  ev.preventDefault();
+  if (!M || !db) return;
+  const {col, doc, def, docId} = M, vals = {};
+  for (const f of def.f){
+    if (f.sec) continue;
+    const el = $('#f_' + f.k); if (!el) continue;
+    vals[f.k] = f.t === 'num' ? (el.value.trim() === '' ? null : num(el.value)) : f.t === 'person' ? (el.dataset.pid || '') : el.value.trim();
+    if (f.req && (vals[f.k] === '' || vals[f.k] == null)){ const fe = $('#ferr'); fe.textContent = `Fyll inn «${f.l}».`; fe.hidden = false; el.focus(); return; }
+  }
+  const now = new Date().toISOString(), meta = {endret: now, endretAv: me?.id || null};
+  try {
+    if (doc && col === 'saldobalanser' && vals.periode && vals.periode !== doc.id){
+      const {id, ...rest} = doc; await db.collection(col).doc(vals.periode).set({...rest, ...vals, ...meta}); await db.collection(col).doc(id).delete();
+    } else if (doc){ const {id, ...rest} = doc; await db.collection(col).doc(id).set({...rest, ...vals, ...meta}); }
+    else {
+      const body = {...vals, ...(M.extraVals || {}), ...meta, opprettet: now, opprettetAv: meta.endretAv, ...(def.extra ? def.extra() : {})};
+      const fid = docId || (col === 'saldobalanser' ? vals.periode : null);
+      if (fid) await db.collection(col).doc(fid).set(body); else await db.collection(col).add(body);
+    }
+    closeModal(); toast('Lagret');
+  } catch (e){ toast(errMsg(e), true); }
+}
+async function delDoc(){
+  if (!M?.doc) return;
+  const b = $('[data-act="del"]');
+  if (!M.armed){ M.armed = true; b.classList.add('armed'); b.textContent = 'Trykk igjen for å slette'; return; }
+  try { await db.collection(M.col).doc(M.doc.id).delete(); closeModal(); toast('Slettet'); } catch (e){ toast(errMsg(e), true); }
+}
+
+/* personvelger */
+function setupPickers(){
+  document.querySelectorAll('#mform .pp').forEach(pp => {
+    const inp = pp.querySelector('input'), list = pp.querySelector('.pp-list');
+    if (!user) return;
+    if (inp.dataset.pid) user.profiles([inp.dataset.pid]).then(ps => { inp.value = ps[inp.dataset.pid]?.name || 'Ukjent person'; });
+    const show = async () => {
+      const hits = await user.search(inp.value.trim() === '' || inp.dataset.pid ? '' : inp.value.trim());
+      list.innerHTML = '';
+      if (!hits.length){ list.innerHTML = '<div class="none">Ingen treff. Skriv et navn.</div>'; }
+      hits.forEach(h => {
+        const b = document.createElement('button'); b.type = 'button';
+        const img = document.createElement('img'); img.src = h.avatarUrl; img.alt = '';
+        const s = document.createElement('span'); s.textContent = h.name + (h.isMe ? ' (deg)' : '');
+        b.append(img, s);
+        b.addEventListener('mousedown', e => { e.preventDefault(); inp.value = h.name; inp.dataset.pid = h.id; list.hidden = true; });
+        list.append(b);
+      });
+      const clr = document.createElement('button'); clr.type = 'button'; clr.textContent = 'Ingen ansvarlig';
+      clr.addEventListener('mousedown', e => { e.preventDefault(); inp.value = ''; inp.dataset.pid = ''; list.hidden = true; });
+      list.append(clr);
+      list.hidden = false;
+    };
+    inp.addEventListener('focus', show);
+    inp.addEventListener('input', () => { inp.dataset.pid = ''; show(); });
+    inp.addEventListener('blur', () => setTimeout(() => list.hidden = true, 120));
+  });
+}
+
+async function fillNames(){
+  if (!user) { document.querySelectorAll('[data-uid]').forEach(e => e.textContent = '–'); return; }
+  const els = [...document.querySelectorAll('[data-uid]')].filter(e => e.dataset.uid);
+  if (!els.length) return;
+  const ps = await user.profiles([...new Set(els.map(e => e.dataset.uid))]);
+  els.forEach(e => { e.textContent = ps[e.dataset.uid]?.name || 'Ukjent person'; });
+}
+
+let tt;
+function toast(msg, err = false){ const t = $('#toast'); t.textContent = msg; t.className = 'toast' + (err ? ' err' : ''); t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, err ? 5000 : 2200); }
+
+/* ---------- byggeklosser ---------- */
+const head = (eb, title, sub, act = '') => `<header class="ph"><div><p class="eb">${eb}</p><h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div><div class="ph-act">${act}</div></header>`;
+const addBtn = (col, label, extra = '') => canWrite ? `<button class="btn primary" data-act="new" data-col="${col}" ${extra}>${label}</button>` : '';
+const empty = (title, txt, btn = '') => `<div class="empty"><b>${title}</b><span>${txt}</span>${btn}</div>`;
+const chip = (cls, txt) => `<span class="chip ${cls}">${esc(txt)}</span>`;
+const fig = (l, v, cls = '') => `<div class="fig"><div class="l">${l}</div><div class="v tab ${cls}">${v}</div></div>`;
+const negc = n => n < 0 ? 'neg' : '';
+const todayLong = () => new Intl.DateTimeFormat('nb-NO',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date());
+
+/* ---------- visninger ---------- */
+function vOversikt(){
+  const cur = curYM(), E = S.eiendommer, L = S.leietakere;
+  const leieMnd = sum(L.filter(l => erAktiv(l, cur)), l => num(l.leieMnd));
+  const ute = utestaende(), uteSum = sum(ute, u => u.rest);
+  const cs = E.map(e => ({e, c: calc(e)}));
+  const cash = sum(cs, x => x.c.cash), budsj = cs.some(x => x.c.kilde === 'budsjett');
+  const verdi = sum(cs, x => x.c.verdi), lan = sum(cs, x => x.c.lan);
+  const utleid = cs.filter(x => !x.c.ledig).length;
+  const A = attention();
+  const open = S.gjoremal.filter(g => !g.ferdig).sort((a,b) => (a.frist || '9999').localeCompare(b.frist || '9999')).slice(0, 5);
+  return head(todayLong(), 'Oversikt', 'Status for porteføljen til LV Eiendom AS: leie, betalinger, frister og det som trenger oppfølging.') + `
+  <section class="kpis">
+    <div class="kpi hl"><div class="l">Leie per måned</div><div class="v">${kr(leieMnd)}</div><div class="s">${utleid} av ${E.length} eiendommer utleid</div></div>
+    <div class="kpi"><div class="l">Utestående leie</div><div class="v ${uteSum > 0 ? 'neg' : ''}">${kr(uteSum)}</div><div class="s">${ute.length ? ute.length + ' forfalte måneder' : 'Ingen forfalte betalinger'}</div></div>
+    <div class="kpi"><div class="l">Kontantstrøm per år</div><div class="v ${negc(cash)}">${kr(cash)}</div><div class="s">${budsj ? 'Budsjett for ledige lokaler' : 'Basert på kontraktene'}</div></div>
+    <div class="kpi"><div class="l">Verdi / belåning</div><div class="v">${krS(verdi)}</div><div class="s">Lån ${krS(lan)} · ${pct(verdi ? lan/verdi : NaN)}</div></div>
+  </section>
+  <section class="grid2">
+    <div class="card"><div class="card-h"><h2>Krever oppmerksomhet</h2>${A.length ? chip('acc nodot', A.length + ' saker') : ''}</div>
+      ${A.length ? `<ul class="att">${A.map(a => `<li><a class="s${a.s}" href="#${a.h}"><span>${a.txt}</span>${a.meta ? `<span class="m">${a.meta}</span>` : ''}</a></li>`).join('')}</ul>` : empty('Alt er i rute', 'Ingen forfalte betalinger, frister eller forsikringer som må følges opp.')}
+    </div>
+    <div class="card"><div class="card-h"><h2>Neste gjøremål</h2><a class="linkbtn" href="#gjoremal">Se alle</a></div>
+      ${open.length ? open.map(taskRow).join('') : empty('Ingen åpne gjøremål', 'Legg til det som må gjøres, med frist og ansvarlig.', addBtn('gjoremal', 'Nytt gjøremål'))}
+    </div>
+  </section>
+  <section class="card"><div class="card-h"><h2>Porteføljen</h2><a class="linkbtn" href="#eiendommer">Til eiendommene</a></div>
+    ${E.length ? `<div class="tw"><table class="tbl"><thead><tr><th>Eiendom</th><th>Status</th><th class="r">Leie / mnd</th><th class="r">Brutto yield</th><th class="r">Kontantstrøm / år</th><th class="r">Belåning</th></tr></thead><tbody>
+      ${cs.map(({e, c}) => `<tr class="click" data-act="goto" data-h="eiendommer"><td><b>${esc(e.navn)}</b><div class="muted small">${esc(e.type || '')}${e.m2 ? ' · ' + nf.format(e.m2) + ' m²' : ''}</div></td>
+        <td>${c.ledig ? chip('warn', 'Ledig') : chip('ok', 'Utleid')}</td><td class="r">${kr(c.leie/12)}${c.kilde === 'budsjett' ? '<div class="muted small">budsjett</div>' : ''}</td>
+        <td class="r">${pct(c.yld)}</td><td class="r ${negc(c.cash)}">${kr(c.cash)}</td><td class="r">${pct(c.ltv)}</td></tr>`).join('')}
+    </tbody></table></div>` : empty('Ingen eiendommer ennå', 'Legg inn den første eiendommen for å se nøkkeltall.', addBtn('eiendommer', 'Ny eiendom'))}
+  </section>`;
+}
+function attention(){
+  const A = [];
+  for (const u of utestaende()) A.push({s:3, txt:`${esc(u.l.navn)} har ikke betalt for ${mLabel(u.ym)}`, meta:kr(u.rest), h:'innbetalinger'});
+  for (const g of S.gjoremal.filter(g => !g.ferdig && g.frist)){
+    const d = daysUntil(g.frist);
+    if (d < 0) A.push({s:3, txt:`Fristen er passert: ${esc(g.tittel)}`, meta:fmtDate(g.frist), h:'gjoremal'});
+    else if (d <= 7) A.push({s:2, txt:`Frist ${d === 0 ? 'i dag' : 'om ' + d + ' dager'}: ${esc(g.tittel)}`, meta:fmtDate(g.frist), h:'gjoremal'});
+  }
+  for (const l of S.leietakere){ if (!l.kontraktSlutt) continue; const d = daysUntil(l.kontraktSlutt);
+    if (d >= 0 && d <= 180) A.push({s:2, txt:`Kontrakten med ${esc(l.navn)} går ut om ${d} dager`, meta:fmtDate(l.kontraktSlutt), h:'leietakere'}); }
+  for (const f of S.forsikringer){
+    if (viaSameie(f)) continue;
+    if (f.fornyes){ const d = daysUntil(f.fornyes); if (d <= 60) A.push({s:2, txt:`${esc(f.type || 'Forsikring')} for ${esc(eNavn(f.eiendomId))} ${d < 0 ? 'skulle vært fornyet' : 'fornyes om ' + d + ' dager'}`, meta:fmtDate(f.fornyes), h:'forsikringer'}); }
+    if (!f.selskap || !f.polisenr) A.push({s:1, txt:`Forsikringen for ${esc(eNavn(f.eiendomId))} mangler selskap eller polisenummer`, h:'forsikringer'});
+  }
+  for (const e of S.eiendommer){ if (calc(e).fellesUkjent) A.push({s:1, txt:`Felleskostnaden for ${esc(e.navn)} er ikke avklart`, meta:'Regnes som 0 kr', h:'eiendommer'}); }
+  for (const e of S.eiendommer){ if (calc(e).ledig) A.push({s:1, txt:`${esc(e.navn)} står ledig${e.annonseStatus === 'Aktiv' && e.annonsePris ? ' og er annonsert for ' + kr(e.annonsePris) + ' / mnd' : ''}`, h:'eiendommer'}); }
+  return A.sort((a, b) => b.s - a.s);
+}
+
+function vEiendommer(){
+  const E = S.eiendommer;
+  return head('Portefølje', 'Eiendommer', 'Kjøp, finansiering og drift for hver eiendom. Tallene regnes ut fra feltene du fyller inn, og leien hentes fra aktive leiekontrakter.', addBtn('eiendommer', 'Ny eiendom')) +
+  (E.length ? `<section class="cards">${E.map(e => {
+    const c = calc(e), L = aktive(e.id);
+    return `<article class="card prop">
+      <div class="top"><div><h2>${esc(e.navn)}</h2><div class="addr">${esc(e.adresse || '')}</div></div>${c.ledig ? chip('warn', 'Ledig') : chip('ok', 'Utleid')}</div>
+      <div class="row small muted" style="margin-top:8px">${esc(e.type || '')}${e.m2 ? ' · ' + nf.format(e.m2) + ' m²' : ''}${e.m2 && c.leie ? ' · ' + kr(c.leie / num(e.m2)) + ' per m² / år' : ''}</div>
+      <div class="figs">
+        ${fig('Totalt investert', krS(c.total))}${fig('Verdi i dag', krS(c.verdi))}${fig('Lån', krS(c.lan))}${fig('Egenkapital', krS(c.ek))}
+        ${fig('Leie per år' + (c.kilde === 'budsjett' ? ' (budsjett)' : ''), kr(c.leie))}${fig('Brutto yield', pct(c.yld))}${fig('Kontantstrøm / år', kr(c.cash), negc(c.cash))}${fig('Avkastning EK', pct(c.roe), negc(c.roe))}
+      </div>
+      ${num(e.kjopesum) ? `<div class="small" style="margin:-6px 0 12px">Verdiøkning siden kjøp: <b class="tab ${c.verdi - num(e.kjopesum) < 0 ? 'neg' : ''}">${c.verdi - num(e.kjopesum) > 0 ? '+' : ''}${kr(c.verdi - num(e.kjopesum))}</b> <span class="muted">(${pct((c.verdi - num(e.kjopesum)) / num(e.kjopesum))} fra kjøpesum ${kr(e.kjopesum)})</span></div>` : ''}
+      ${c.fellesUkjent ? `<div class="note-bar small" style="margin-bottom:12px">Felleskostnaden er ikke avklart ennå. Kontantstrømmen over er regnet uten den.</div>` : ''}
+      ${L.length ? `<div class="small"><b>Leietaker${L.length > 1 ? 'e' : ''}:</b> ${L.map(l => `${esc(l.navn)} (${kr(l.leieMnd)} / mnd)`).join(', ')}</div>` : ''}
+      ${e.finnKode ? `<div class="finn" style="margin-top:12px"><span>FINN <b>${esc(e.finnKode)}</b></span>${e.annonseStatus ? chip(e.annonseStatus === 'Aktiv' ? 'ok' : 'nodot', e.annonseStatus) : ''}
+        ${e.annonsePris ? `<span><b>${kr(e.annonsePris)}</b> / mnd</span>` : ''}${e.finnKlikk != null ? `<span>${nf.format(e.finnKlikk)} klikk · ${nf.format(e.finnBesokende || 0)} besøkende · ${nf.format(e.finnFavoritter || 0)} favoritter</span>` : ''}
+        <a href="https://www.finn.no/${encodeURIComponent(e.finnKode)}" target="_blank" rel="noopener">Åpne annonsen</a></div>` : ''}
+      ${e.notat ? `<p class="small muted" style="margin:12px 0 0">${esc(e.notat)}</p>` : ''}
+      <div class="row" style="margin-top:16px"><button class="btn sm" data-act="edit" data-col="eiendommer" data-id="${esc(e.id)}">${canWrite ? 'Rediger' : 'Detaljer'}</button>
+        ${canWrite ? `<button class="btn sm" data-act="new" data-col="leietakere" data-def='${esc(JSON.stringify({eiendomId: e.id, forfallsdag: 1, betalingFra: curYM()}))}'>Legg til leietaker</button>` : ''}</div>
+    </article>`; }).join('')}</section>` : empty('Ingen eiendommer ennå', 'Legg inn kjøpesum, lån og leie, så regner portalen ut yield og kontantstrøm.', addBtn('eiendommer', 'Ny eiendom')));
+}
+
+function vLeietakere(){
+  const L = [...S.leietakere].sort((a, b) => eNavn(a.eiendomId).localeCompare(eNavn(b.eiendomId)));
+  const cur = curYM(), last6 = months(shiftYM(cur, -5), cur);
+  return head('Portefølje', 'Leietakere', 'Kontaktinfo, kontraktsvilkår og betalingshistorikk for alle leietakere.', addBtn('leietakere', 'Ny leietaker', `data-def='${esc(JSON.stringify({forfallsdag: 1, betalingFra: curYM()}))}'`)) +
+  (L.length ? `<section class="cards">${L.map(l => {
+    const akt = erAktiv(l, cur), d = l.kontraktSlutt ? daysUntil(l.kontraktSlutt) : null;
+    return `<article class="card">
+      <div class="spread"><h2>${esc(l.navn)}</h2>${!akt ? chip('nodot', l.kontraktSlutt && l.kontraktSlutt < todayISO() ? 'Avsluttet' : 'Ikke startet') : d != null && d <= 180 ? chip('warn', 'Går ut snart') : chip('ok', 'Aktiv')}</div>
+      <div class="muted" style="margin-top:4px">${esc(eNavn(l.eiendomId))}${l.orgnr ? ' · org.nr. ' + esc(l.orgnr) : ''}</div>
+      <dl class="dl">
+        <dt>Leie</dt><dd class="tab"><b>${kr(l.leieMnd)}</b> / mnd${l.mva === 'Ja' ? ' + mva' : ''}, forfall den ${num(l.forfallsdag) || 1}.</dd>
+        <dt>Kontrakt</dt><dd>${fmtDate(l.kontraktStart)} – ${l.kontraktSlutt ? fmtDate(l.kontraktSlutt) : 'løpende'}</dd>
+        ${l.indeksregulering ? `<dt>Regulering</dt><dd>${esc(l.indeksregulering)}</dd>` : ''}
+        ${l.sikkerhet && l.sikkerhet !== 'Ingen' ? `<dt>Sikkerhet</dt><dd>${esc(l.sikkerhet)}${l.sikkerhetBelop ? ', ' + kr(l.sikkerhetBelop) : ''}</dd>` : ''}
+        ${l.kontaktperson ? `<dt>Kontakt</dt><dd>${esc(l.kontaktperson)}</dd>` : ''}
+        ${l.telefon ? `<dt>Telefon</dt><dd>${esc(l.telefon)}</dd>` : ''}
+        ${l.epost ? `<dt>E-post</dt><dd>${esc(l.epost)}</dd>` : ''}
+      </dl>
+      <div class="spread small"><span class="muted">Siste 6 måneder</span><div class="dots" title="Betalingsstatus">${last6.map(ym => {
+        const s = erAktiv(l, ym) && ym >= (l.betalingFra || '0000') ? status(l, ym).k : null;
+        return `<i class="${s === 'betalt' ? 'ok' : s === 'forfalt' ? 'bad' : s === 'delvis' ? 'warn' : ''}" title="${mLabel(ym)}${s ? ': ' + STATUS[s][1] : ''}"></i>`; }).join('')}</div></div>
+      ${l.notat ? `<p class="small muted" style="margin:12px 0 0">${esc(l.notat)}</p>` : ''}
+      <div class="row" style="margin-top:16px"><button class="btn sm" data-act="edit" data-col="leietakere" data-id="${esc(l.id)}">${canWrite ? 'Rediger' : 'Detaljer'}</button></div>
+    </article>`; }).join('')}</section>` :
+    empty('Ingen leietakere registrert', 'Begge lokalene er annonsert på FINN. Når en kontrakt er signert, legger du inn leietakeren her, så dukker leien opp under Innbetalinger.', addBtn('leietakere', 'Ny leietaker', `data-def='${esc(JSON.stringify({forfallsdag: 1, betalingFra: curYM()}))}'`)));
+}
+
+function vInnbetalinger(){
+  const ym = payYM, L = S.leietakere.filter(l => erAktiv(l, ym));
+  const rows = L.map(l => ({l, s: status(l, ym)}));
+  const forventet = sum(L, l => num(l.leieMnd)), inn = sum(rows, r => num(r.s.b?.belop));
+  const ute = utestaende().filter(u => u.ym !== ym);
+  return head('Portefølje', 'Innbetalinger', 'Forventet husleie per måned. Marker betalingen når pengene er på konto, så holder portalen styr på hva som er utestående.') + `
+  <div class="spread"><div class="mnav"><button class="iconbtn" data-act="month" data-d="-1" aria-label="Forrige måned">‹</button><b>${mLabel(ym)}</b><button class="iconbtn" data-act="month" data-d="1" aria-label="Neste måned">›</button></div>
+    ${ym !== curYM() ? '<button class="linkbtn" data-act="month" data-d="0">Til denne måneden</button>' : ''}</div>
+  <section class="kpis">
+    <div class="kpi"><div class="l">Forventet</div><div class="v">${kr(forventet)}</div><div class="s">${L.length} leietakere</div></div>
+    <div class="kpi"><div class="l">Innbetalt</div><div class="v">${kr(inn)}</div><div class="s">${rows.filter(r => r.s.k === 'betalt').length} av ${L.length} betalt</div></div>
+    <div class="kpi"><div class="l">Gjenstår</div><div class="v ${forventet - inn > 0 && rows.some(r => r.s.k === 'forfalt') ? 'neg' : ''}">${kr(Math.max(0, forventet - inn))}</div><div class="s">denne måneden</div></div>
+    <div class="kpi"><div class="l">Eldre utestående</div><div class="v ${ute.length ? 'neg' : ''}">${kr(sum(ute, u => u.rest))}</div><div class="s">${ute.length ? ute.length + ' måneder' : 'Ingenting'}</div></div>
+  </section>
+  <section class="card"><div class="card-h"><h2>${mLabel(ym)}</h2></div>
+    ${rows.length ? `<div class="tw"><table class="tbl"><thead><tr><th>Leietaker</th><th>Forfall</th><th class="r">Leie</th><th class="r">Innbetalt</th><th>Status</th><th></th></tr></thead><tbody>
+      ${rows.map(({l, s}) => `<tr><td><b>${esc(l.navn)}</b><div class="muted small">${esc(eNavn(l.eiendomId))}</div></td><td>${fmtDate(forfall(l, ym))}</td>
+        <td class="r">${kr(l.leieMnd)}</td><td class="r">${s.b ? kr(s.b.belop) + `<div class="muted small">${fmtDate(s.b.betaltDato)}</div>` : '–'}</td>
+        <td>${chip(STATUS[s.k][0], STATUS[s.k][1])}</td>
+        <td class="r">${canWrite ? (s.b ? `<button class="btn sm" data-act="editpay" data-id="${esc(s.b.id)}">Endre</button>` : `<button class="btn sm primary" data-act="pay" data-l="${esc(l.id)}" data-ym="${ym}">Registrer betalt</button>`) : ''}</td></tr>`).join('')}
+    </tbody></table></div>` : empty('Ingen leie å kreve inn denne måneden', S.leietakere.length ? 'Ingen kontrakter er aktive i ' + mLabel(ym) + '.' : 'Legg inn leietakere med månedsleie, så vises de her.', S.leietakere.length ? '' : addBtn('leietakere', 'Ny leietaker', `data-def='${esc(JSON.stringify({forfallsdag: 1, betalingFra: curYM()}))}'`))}
+  </section>
+  ${ute.length ? `<section class="card"><div class="card-h"><h2>Utestående fra tidligere måneder</h2></div><div class="tw"><table class="tbl"><tbody>
+    ${ute.map(u => `<tr><td><b>${esc(u.l.navn)}</b><div class="muted small">${esc(eNavn(u.l.eiendomId))}</div></td><td>${mLabel(u.ym)}</td><td class="r neg">${kr(u.rest)}</td>
+      <td class="r">${canWrite ? `<button class="btn sm" data-act="pay" data-l="${esc(u.l.id)}" data-ym="${u.ym}">Registrer betalt</button>` : ''}</td></tr>`).join('')}
+  </tbody></table></div></section>` : ''}`;
+}
+
+function taskRow(g){
+  const d = g.frist ? daysUntil(g.frist) : null;
+  const fr = g.frist ? chip(g.ferdig ? 'nodot' : d < 0 ? 'bad' : d <= 7 ? 'warn' : 'nodot', (d < 0 && !g.ferdig ? 'Forfalt ' : 'Frist ') + fmtDate(g.frist)) : '';
+  return `<div class="task ${g.ferdig ? 'done' : ''}">
+    <button class="check ${g.ferdig ? 'on' : ''}" data-act="toggle" data-id="${esc(g.id)}" aria-label="${g.ferdig ? 'Marker som åpen' : 'Marker som fullført'}" ${canWrite ? '' : 'disabled'}>${g.ferdig ? ico('tick', 16) : ''}</button>
+    <div class="body" data-act="edit" data-col="gjoremal" data-id="${esc(g.id)}">
+      <div class="t">${esc(g.tittel)}</div>
+      <div class="meta">${fr}<span>${esc(eNavn(g.eiendomId))}</span>${g.prioritet === 'Høy' ? chip('bad nodot', 'Høy prioritet') : ''}${g.ansvarlig ? `<span>Ansvarlig: <b data-uid="${esc(g.ansvarlig)}">…</b></span>` : ''}</div>
+      ${g.notat ? `<div class="note">${esc(g.notat)}</div>` : ''}
+    </div></div>`;
+}
+function vGjoremal(){
+  const all = S.gjoremal, open = all.filter(g => !g.ferdig), done = all.filter(g => g.ferdig);
+  const list = (taskTab === 'open' ? open : done).sort((a, b) => taskTab === 'open'
+    ? ((b.prioritet === 'Høy') - (a.prioritet === 'Høy')) || (a.frist || '9999').localeCompare(b.frist || '9999')
+    : (b.ferdigDato || '').localeCompare(a.ferdigDato || ''));
+  return head('Drift', 'Gjøremål', 'Det som må gjøres på eiendommene og i selskapet. Gi hvert gjøremål en frist og en ansvarlig eier.', addBtn('gjoremal', 'Nytt gjøremål')) + `
+  <div><div class="segs" role="tablist"><button class="${taskTab === 'open' ? 'on' : ''}" data-act="tab" data-t="open">Åpne (${open.length})</button><button class="${taskTab === 'done' ? 'on' : ''}" data-act="tab" data-t="done">Fullført (${done.length})</button></div></div>
+  <section class="card">${list.length ? list.map(taskRow).join('') : taskTab === 'open' ? empty('Ingen åpne gjøremål', 'Alt er gjort. Legg til et nytt når noe dukker opp.', addBtn('gjoremal', 'Nytt gjøremål')) : empty('Ingen fullførte gjøremål ennå', 'Huk av et gjøremål når det er gjort, så havner det her.')}</section>`;
+}
+
+function vOkonomi(){
+  const E = S.eiendommer, cs = E.map(e => ({e, c: calc(e)})), yr = new Date().getFullYear();
+  const T = k => sum(cs, x => x.c[k]);
+  const tot = {total:T('total'), leie:T('leie'), felles:T('felles'), fors:T('fors'), andre:T('andre'), netto:T('netto'), rente:T('rente'), etterRente:T('etterRente'), avdrag:T('avdrag'), cash:T('cash'), ek:T('ek'), lan:T('lan'), verdi:T('verdi')};
+  tot.yld = tot.total ? tot.leie/tot.total : NaN; tot.roe = tot.ek ? tot.etterRente/tot.ek : NaN; tot.ltv = tot.verdi ? tot.lan/tot.verdi : NaN;
+  const R = (lab, k, f = kr, cls = '', neg = false) => `<tr class="${cls}"><td>${lab}</td>${cs.map(x => `<td class="r ${neg || x.c[k] < 0 ? 'neg' : ''}">${neg && x.c[k] ? '−' : ''}${f(x.c[k])}</td>`).join('')}${cs.length > 1 ? `<td class="r ${neg || tot[k] < 0 ? 'neg' : ''}">${neg && tot[k] ? '−' : ''}${f(tot[k])}</td>` : ''}</tr>`;
+  const P = S.poster.filter(p => (p.dato || '').startsWith(String(yr))).sort((a, b) => (b.dato || '').localeCompare(a.dato || ''));
+  const leieInn = sum(S.betalinger.filter(b => (b.periode || '').startsWith(String(yr))), b => num(b.belop));
+  const andreInn = sum(P.filter(p => p.type === 'Inntekt'), p => num(p.belop)), kost = sum(P.filter(p => p.type !== 'Inntekt'), p => num(p.belop));
+  return head('Økonomi', 'Økonomi', 'Årlig budsjett per eiendom, hva som faktisk er betalt inn og ført i år, og forventet verdiutvikling.', addBtn('poster', 'Før kostnad eller inntekt', `data-def='${esc(JSON.stringify({type: 'Kostnad', dato: todayISO()}))}'`)) +
+  (E.length ? `<section class="card"><div class="card-h"><h2>Budsjett per år</h2><span class="muted small">Leie fra kontrakt, ellers budsjett. Forsikring fra Forsikringer.</span></div>
+    <div class="tw"><table class="tbl"><thead><tr><th></th>${cs.map(x => `<th class="r">${esc(x.e.navn)}</th>`).join('')}${cs.length > 1 ? '<th class="r">Totalt</th>' : ''}</tr></thead><tbody>
+      ${R('Leieinntekter', 'leie')}<tr><td>Felleskostnader</td>${cs.map(x => x.c.fellesUkjent ? `<td class="r">${chip('info', 'Ikke avklart')}</td>` : `<td class="r ${x.c.felles ? 'neg' : ''}">${x.c.felles ? '−' : ''}${kr(x.c.felles)}</td>`).join('')}${cs.length > 1 ? `<td class="r ${tot.felles ? 'neg' : ''}">${tot.felles ? '−' : ''}${kr(tot.felles)}${cs.some(x => x.c.fellesUkjent) ? '<div class="muted small">+ ikke avklart</div>' : ''}</td>` : ''}</tr>${R('Forsikring', 'fors', kr, '', true)}${R('Andre faste kostnader', 'andre', kr, '', true)}
+      ${R('Netto driftsresultat', 'netto', kr, 'sum')}${R('Renter', 'rente', kr, '', true)}${R('Resultat etter renter', 'etterRente', kr, 'em')}${R('Avdrag', 'avdrag', kr, '', true)}
+      ${R('Kontantstrøm', 'cash', kr, 'em sum')}
+      ${R('Totalt investert', 'total')}${R('Egenkapital', 'ek')}${R('Lån', 'lan')}${R('Brutto yield', 'yld', pct)}${R('Avkastning på egenkapital', 'roe', pct)}${R('Belåningsgrad', 'ltv', pct)}
+    </tbody></table></div></section>` : '') + `
+  ${verdiSeksjon(cs, yr)}
+  <section>
+    <div class="card"><div class="card-h"><h2>Ført i ${yr}</h2></div>
+      <div class="kpis" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:16px">
+        <div class="kpi"><div class="l">Innbetalt leie</div><div class="v">${kr(leieInn)}</div></div>
+        <div class="kpi"><div class="l">Andre inntekter</div><div class="v">${kr(andreInn)}</div></div>
+        <div class="kpi"><div class="l">Kostnader</div><div class="v ${kost ? 'neg' : ''}">${kost ? '−' : ''}${kr(kost)}</div></div>
+        <div class="kpi"><div class="l">Resultat før renter</div><div class="v ${negc(leieInn + andreInn - kost)}">${kr(leieInn + andreInn - kost)}</div></div>
+      </div>
+      ${P.length ? `<div class="tw"><table class="tbl"><tbody>${P.map(p => `<tr class="click" data-act="edit" data-col="poster" data-id="${esc(p.id)}"><td>${fmtDate(p.dato)}</td>
+        <td><b>${esc(p.kategori || p.type)}</b>${p.tekst ? `<div class="muted small">${esc(p.tekst)}</div>` : ''}<div class="muted small">${esc(eNavn(p.eiendomId))}</div></td>
+        <td class="r ${p.type === 'Inntekt' ? '' : 'neg'}">${p.type === 'Inntekt' ? '' : '−'}${kr(p.belop)}</td></tr>`).join('')}</tbody></table></div>`
+        : empty('Ingen poster ført i ' + yr, 'Før vedlikehold, kommunale avgifter og andre kostnader her etter hvert som de kommer.', addBtn('poster', 'Før kostnad', `data-def='${esc(JSON.stringify({type: 'Kostnad', dato: todayISO()}))}'`))}
+    </div>
+  </section>`;
+}
+
+const AAR = 6; /* som i porteføljeoversikten: nåverdi og seks år fram */
+const proj = (x, i) => x.c.verdi * Math.pow(1 + num(x.e.verdistigning) / 100, i);
+function niceStep(x){ const p = Math.pow(10, Math.floor(Math.log10(x))), m = x / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
+const mill = v => v === 0 ? '0' : (v / 1e6).toLocaleString('nb-NO', {maximumFractionDigits: 2}) + ' mill.';
+function verdiGraf(cs, yrs){
+  const W = 760, H = 280, L = 70, R = 92, T = 18, B = 36;
+  const labels = ['Kjøpt', 'I dag', ...yrs.map(String)];
+  const ser = cs.map((x, k) => ({n: x.e.navn, col: k % 2 ? 'var(--info)' : 'var(--acc)', v: [num(x.e.kjopesum), x.c.verdi, ...yrs.map((_, i) => proj(x, i + 1))]}));
+  const max = Math.max(1, ...ser.flatMap(s => s.v)), step = niceStep(max / 4), top = Math.ceil(max / step) * step;
+  const X = i => L + i * (W - L - R) / (labels.length - 1), Y = v => T + (H - T - B) * (1 - v / top);
+  let g = '';
+  for (let v = 0; v <= top + 1; v += step) g += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" style="stroke:var(--line)" stroke-width="1"/><text x="${L - 10}" y="${Y(v) + 4}" text-anchor="end" style="fill:var(--mut)" font-size="12">${mill(v)}</text>`;
+  g += labels.map((l, i) => `<text x="${X(i)}" y="${H - 12}" text-anchor="middle" style="fill:var(--mut)" font-size="12">${l}</text>`).join('');
+  g += `<line x1="${X(1)}" x2="${X(1)}" y1="${T}" y2="${H - B}" style="stroke:var(--mut)" stroke-dasharray="2 4"/>`;
+  for (const s of ser){
+    const pts = s.v.map((v, i) => `${X(i)},${Y(v)}`);
+    g += `<polyline points="${pts.slice(0, 2).join(' ')}" fill="none" style="stroke:${s.col}" stroke-width="3" stroke-linecap="round"/>`;
+    g += `<polyline points="${pts.slice(1).join(' ')}" fill="none" style="stroke:${s.col}" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round"/>`;
+    g += s.v.map((v, i) => `<circle cx="${X(i)}" cy="${Y(v)}" r="${i < 2 ? 5 : 3.5}" style="fill:${i < 2 ? s.col : 'var(--panel)'};stroke:${s.col}" stroke-width="2"><title>${esc(s.n)} – ${labels[i]}: ${kr(v)}</title></circle>`).join('');
+    g += `<text x="${X(labels.length - 1) + 10}" y="${Y(s.v[s.v.length - 1]) + 4}" style="fill:${s.col}" font-size="13" font-weight="700">${mill(s.v[s.v.length - 1])}</text>`;
+  }
+  return `<div class="tw"><svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:560px;display:block" role="img" aria-label="Verdiutvikling fra kjøpesum til ${yrs[yrs.length - 1]}">${g}</svg></div>
+    <div class="row small" style="gap:18px;margin:8px 0 18px">${ser.map(s => `<span class="row" style="gap:8px"><i style="width:14px;height:4px;border-radius:2px;background:${s.col}"></i>${esc(s.n)}</span>`).join('')}<span class="muted">Heltrukket: faktisk. Stiplet: forventet.</span></div>`;
+}
+function verdiSeksjon(cs, yr){
+  if (!cs.length) return '';
+  const yrs = Array.from({length: AAR}, (_, i) => yr + i + 1), multi = cs.length > 1;
+  const sg = n => n > 0 ? '+' : '';
+  const val = (lab, f, cls = '', sub = '') => `<tr class="${cls}"><td>${lab}${sub ? `<div class="muted small">${sub}</div>` : ''}</td>${cs.map(x => `<td class="r">${kr(f(x))}</td>`).join('')}${multi ? `<td class="r">${kr(sum(cs, f))}</td>` : ''}</tr>`;
+  const gain = (lab, f, base, cls = '') => { const c = (g, b) => `<td class="r ${g < 0 ? 'neg' : ''}">${sg(g)}${kr(g)}<div class="muted small">${b ? sg(g) + pct(g / b) : ''}</div></td>`;
+    return `<tr class="${cls}"><td>${lab}</td>${cs.map(x => c(f(x), base(x))).join('')}${multi ? c(sum(cs, f), sum(cs, base)) : ''}</tr>`; };
+  const last = x => proj(x, AAR);
+  return `<section class="card"><div class="card-h"><h2>Verdiutvikling</h2><span class="muted small">Fra kjøpesum til nåverdi, og videre med forventet årlig verdistigning</span></div>
+    ${verdiGraf(cs, yrs)}
+    <div class="tw"><table class="tbl"><thead><tr><th></th>${cs.map(x => `<th class="r">${esc(x.e.navn)}</th>`).join('')}${multi ? '<th class="r">Totalt</th>' : ''}</tr></thead><tbody>
+      ${val('Kjøpesum', x => num(x.e.kjopesum))}
+      ${val('Totalt investert', x => x.c.total, '', 'Inkl. dokumentavgift, låneetablering, omkostninger og oppgraderinger')}
+      ${val('Nåverdi', x => x.c.verdi, 'em')}
+      ${gain('Verdiøkning fra kjøpesum', x => x.c.verdi - num(x.e.kjopesum), x => num(x.e.kjopesum))}
+      ${gain('Verdiøkning fra totalt investert', x => x.c.verdi - x.c.total, x => x.c.total)}
+      <tr><td colspan="${cs.length + (multi ? 2 : 1)}" style="padding-top:22px"><b class="muted small" style="letter-spacing:.1em;text-transform:uppercase">Forventet verdi</b> <span class="muted small">(${cs.map(x => esc(x.e.navn) + ': ' + nfIn.format(num(x.e.verdistigning)) + ' % per år').join(' · ')})</span></td></tr>
+      ${yrs.map((y, i) => val(String(y), x => proj(x, i + 1))).join('')}
+      ${gain(`Verdiøkning fra totalt investert til ${yrs[AAR - 1]}`, x => last(x) - x.c.total, x => x.c.total, 'em sum')}
+    </tbody></table></div></section>`;
+}
+
+function vForsikringer(){
+  const F = [...S.forsikringer].sort((a, b) => eNavn(a.eiendomId).localeCompare(eNavn(b.eiendomId)));
+  return head('Økonomi', 'Forsikringer', 'Polisene på eiendommene, hva de koster og når de fornyes. Premien her brukes i økonomiberegningen.', addBtn('forsikringer', 'Ny forsikring')) + `
+  <section class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+    <div class="kpi"><div class="l">Premie per år</div><div class="v">${kr(sum(F, f => num(f.premieAr)))}</div><div class="s">${F.length} poliser</div></div>
+    <div class="kpi"><div class="l">Fornyes innen 60 dager</div><div class="v">${F.filter(f => f.fornyes && daysUntil(f.fornyes) <= 60).length}</div></div>
+    <div class="kpi"><div class="l">Mangler opplysninger</div><div class="v ${F.some(forsMangler) ? 'neg' : ''}">${F.filter(forsMangler).length}</div></div>
+  </section>
+  ${F.length ? `<section class="cards">${F.map(f => {
+    const d = f.fornyes ? daysUntil(f.fornyes) : null, miss = ['selskap', 'polisenr', 'fornyes'].filter(k => !f[k]);
+    if (viaSameie(f)) return `<article class="card"><div class="spread"><h2>${esc(eNavn(f.eiendomId))}</h2>${chip('ok', 'Gjennom sameiet')}</div>
+      <div class="muted" style="margin-top:4px">${esc(f.type || 'Forsikring')}</div>
+      <dl class="dl"><dt>Ordning</dt><dd>Forsikret gjennom sameiet</dd>${f.selskap ? `<dt>Selskap</dt><dd>${esc(f.selskap)}</dd>` : ''}<dt>Premie</dt><dd>Inngår i felleskostnaden</dd></dl>
+      ${f.notat ? `<p class="small muted" style="margin:0">${esc(f.notat)}</p>` : ''}
+      <div class="row" style="margin-top:16px"><button class="btn sm" data-act="edit" data-col="forsikringer" data-id="${esc(f.id)}">${canWrite ? 'Rediger' : 'Detaljer'}</button></div></article>`;
+    return `<article class="card"><div class="spread"><h2>${esc(eNavn(f.eiendomId))}</h2>${miss.length ? chip('info', 'Mangler info') : d != null && d <= 60 ? chip('warn', 'Fornyes snart') : chip('ok', 'I orden')}</div>
+      <div class="muted" style="margin-top:4px">${esc(f.type || 'Forsikring')}</div>
+      <dl class="dl"><dt>Selskap</dt><dd>${f.selskap ? esc(f.selskap) : '<span class="muted">Ikke fylt inn</span>'}</dd>
+        <dt>Polisenr.</dt><dd>${f.polisenr ? esc(f.polisenr) : '<span class="muted">Ikke fylt inn</span>'}</dd>
+        <dt>Premie</dt><dd class="tab"><b>${kr(f.premieAr)}</b> per år</dd>
+        <dt>Fornyes</dt><dd>${f.fornyes ? fmtDate(f.fornyes) + (d >= 0 ? ` (om ${d} dager)` : ' (passert)') : '<span class="muted">Ikke fylt inn</span>'}</dd>
+        ${f.egenandel ? `<dt>Egenandel</dt><dd>${kr(f.egenandel)}</dd>` : ''}</dl>
+      ${f.notat ? `<p class="small muted" style="margin:0">${esc(f.notat)}</p>` : ''}
+      <div class="row" style="margin-top:16px"><button class="btn sm" data-act="edit" data-col="forsikringer" data-id="${esc(f.id)}">${canWrite ? 'Rediger' : 'Detaljer'}</button></div></article>`; }).join('')}</section>`
+    : empty('Ingen forsikringer registrert', 'Legg inn polisene, så får du varsel før de skal fornyes.', addBtn('forsikringer', 'Ny forsikring'))}`;
+}
+
+/* ---------- saldobalanse (fylles inn for hånd) ---------- */
+let sbYM = null;
+function sbTall(d){
+  const inn = num(d.inntekter), kost = num(d.kostnader);
+  return { rest: num(d.restgjeld), oss: num(d.gjeldTilOss), bank: num(d.bank), inn, kost,
+    res: d.resultat != null && d.resultat !== '' ? num(d.resultat) : inn - kost };
+}
+function sbListeAlle(){ return (S.saldobalanser || []).filter(x => x.periode).sort((a, b) => b.periode.localeCompare(a.periode)); }
+function vSaldo(){
+  const list = sbListeAlle();
+  if (!sbYM || !list.some(x => x.periode === sbYM)) sbYM = list[0]?.periode || null;
+  const d = list.find(x => x.periode === sbYM), i = list.indexOf(d), prev = list[i + 1];
+  const nyKnapp = addBtn('saldobalanser', 'Legg inn måned', `data-def='${esc(JSON.stringify({periode: shiftYM(curYM(), -1)}))}'`);
+  if (!d) return head('Økonomi', 'Saldobalanse', 'Tallene fra saldobalansen hver måned: restgjeld, gjeld til eierne, bank og resultat. Hent tallene fra regnskapet og legg dem inn her.', nyKnapp) +
+    empty('Ingen saldobalanser ennå', 'Be regnskapsføreren om saldobalansen for forrige måned, og legg inn de viktigste tallene.', nyKnapp);
+  const t = sbTall(d), p = prev ? sbTall(prev) : null;
+  const dlt = k => { if (!p) return ''; const v = t[k] - p[k]; return `<div class="s">${v === 0 ? 'Uendret' : (v > 0 ? '+' : '−') + kr(Math.abs(v))} fra ${mShort(prev.periode)}</div>`; };
+  const lanPortal = sum(S.eiendommer || [], e => num(e.lan)), avvik = Math.round(t.rest - lanPortal);
+  const nav = list.length > 1 ? `<div class="mnav"><button class="iconbtn" data-act="sb-nav" data-d="1" ${i >= list.length - 1 ? 'disabled' : ''} aria-label="Eldre måned">‹</button><b>${mLabel(d.periode)}</b><button class="iconbtn" data-act="sb-nav" data-d="-1" ${i <= 0 ? 'disabled' : ''} aria-label="Nyere måned">›</button></div>` : '';
+  return head('Økonomi', 'Saldobalanse', 'Tallene fra saldobalansen hver måned: restgjeld, gjeld til eierne, bank og resultat. Hent tallene fra regnskapet og legg dem inn her.', nyKnapp) + `
+  <section class="card"><div class="card-h"><h2>Saldobalanse ${mLabel(d.periode)}</h2><div class="row">${nav}<button class="btn sm" data-act="edit" data-col="saldobalanser" data-id="${esc(d.id)}">${canWrite ? 'Rediger' : 'Detaljer'}</button></div></div>
+    <div class="kpis">
+      <div class="kpi hl"><div class="l">Restgjeld bank</div><div class="v">${kr(t.rest)}</div>${dlt('rest')}</div>
+      <div class="kpi"><div class="l">Gjeld til oss</div><div class="v">${kr(t.oss)}</div>${dlt('oss')}</div>
+      <div class="kpi"><div class="l">Bankinnskudd</div><div class="v">${kr(t.bank)}</div>${dlt('bank')}</div>
+      <div class="kpi"><div class="l">Resultat hittil i år</div><div class="v ${negc(t.res)}">${kr(t.res)}</div>${dlt('res')}</div>
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div class="tw"><table class="tbl"><tbody>
+        <tr><td>Inntekter hittil i år</td><td class="r">${kr(t.inn)}</td></tr>
+        <tr><td>Kostnader hittil i år</td><td class="r ${t.kost ? 'neg' : ''}">${t.kost ? '−' : ''}${kr(t.kost)}</td></tr>
+        <tr class="sum"><td>Resultat</td><td class="r ${negc(t.res)}">${kr(t.res)}</td></tr></tbody></table></div>
+      <div class="tw"><table class="tbl"><tbody>
+        <tr><td>Restgjeld i saldobalansen</td><td class="r">${kr(t.rest)}</td></tr>
+        <tr><td>Lån registrert i portalen</td><td class="r">${kr(lanPortal)}</td></tr>
+        <tr class="sum"><td>Avvik</td><td class="r">${avvik === 0 ? chip('ok', 'Stemmer') : (avvik > 0 ? '+' : '−') + kr(Math.abs(avvik))}</td></tr></tbody></table>
+        ${avvik !== 0 && t.rest ? '<p class="hint" style="margin:10px 0 0">Oppdater lånet på hver eiendom under Eiendommer → Rediger, så stemmer økonomitallene.</p>' : ''}</div>
+    </div>
+    ${d.notat ? `<p class="muted" style="margin:18px 0 0;max-width:75ch">${esc(d.notat)}</p>` : ''}
+  </section>
+  ${list.length > 1 ? `<section class="card"><div class="card-h"><h2>Utvikling</h2></div>
+    <div class="tw"><table class="tbl"><thead><tr><th>Måned</th><th class="r">Restgjeld</th><th class="r">Gjeld til oss</th><th class="r">Bank</th><th class="r">Resultat hittil</th></tr></thead><tbody>
+    ${list.map(x => { const q = sbTall(x); return `<tr class="click ${x.periode === sbYM ? 'em' : ''}" data-act="sb-vis" data-ym="${esc(x.periode)}"><td>${mLabel(x.periode)}</td><td class="r">${kr(q.rest)}</td><td class="r">${kr(q.oss)}</td><td class="r">${kr(q.bank)}</td><td class="r ${negc(q.res)}">${kr(q.res)}</td></tr>`; }).join('')}
+    </tbody></table></div></section>` : ''}`;
+}
+
+/* ---------- eiere og tilgang ---------- */
+const ROLLE = { admin: 'Administrator', skriv: 'Kan endre', les: 'Kan se' };
+let brukere = [], sisteLenke = null;
+async function hentBrukere(){ try { brukere = (await api('/api/users')).brukere || []; } catch { brukere = []; } }
+function vEiere(){
+  const admin = me?.rolle === 'admin';
+  const lenkeKort = sisteLenke ? `<section class="card"><div class="card-h"><h2>Lenke til ${esc(sisteLenke.navn)}</h2></div>
+    <p class="muted" style="margin:0 0 12px">Send lenken til ${esc(sisteLenke.navn)} på e-post eller SMS. Den gjelder i ${sisteLenke.dager} dager og kan bare brukes én gang. Der velger ${esc(sisteLenke.navn)} sitt eget passord.</p>
+    <div class="copy"><input class="inp" id="lenke" readonly value="${esc(sisteLenke.url)}"><button class="btn primary" data-act="kopier">Kopier</button></div></section>` : '';
+  return head('Selskapet', 'Eiere og tilgang', admin ? 'Inviter eierne og bestem hva hver enkelt kan gjøre. Alle logger inn med e-post og eget passord.' : 'Hvem som har tilgang til portalen.',
+      admin ? `<button class="btn primary" data-act="inviter">Inviter eier</button>` : '') + lenkeKort + `
+  <section class="card">${brukere.length ? `<div class="tw"><table class="tbl"><thead><tr><th>Navn</th>${admin ? '<th>E-post</th>' : ''}<th>Tilgang</th>${admin ? '<th>Status</th><th></th>' : ''}</tr></thead><tbody>
+    ${brukere.map(b => `<tr><td><b>${esc(b.navn)}</b>${b.id === me?.id ? ' <span class="muted small">(deg)</span>' : ''}</td>${admin ? `<td>${esc(b.epost)}</td>` : ''}
+      <td>${admin && b.id !== me?.id ? `<select class="inp" style="padding:6px 10px;width:auto" data-rolle="${esc(b.id)}">${Object.entries(ROLLE).map(([k, v]) => `<option value="${k}" ${b.rolle === k ? 'selected' : ''}>${v}</option>`).join('')}</select>` : esc(ROLLE[b.rolle] || b.rolle)}</td>
+      ${admin ? `<td>${b.aktiv ? chip('ok', 'Aktiv') : b.invitert ? chip('warn', 'Invitert') : chip('nodot', 'Lenken har gått ut')}</td>
+      <td class="r">${b.id !== me?.id ? `<button class="btn sm" data-act="ny-lenke" data-id="${esc(b.id)}" data-navn="${esc(b.navn)}">${b.aktiv ? 'Nytt passord' : 'Ny lenke'}</button> <button class="btn sm danger" data-act="fjern" data-id="${esc(b.id)}">Fjern</button>` : ''}</td>` : ''}</tr>`).join('')}
+  </tbody></table></div>` : empty('Ingen eiere', '')}</section>
+  ${admin ? `<p class="muted small" style="margin:0"><b>Administrator</b> kan alt, også invitere og fjerne eiere. <b>Kan endre</b> kan registrere innbetalinger, gjøremål og tall. <b>Kan se</b> kan bare lese. Glemmer noen passordet, trykker du «Nytt passord» og sender den nye lenken.</p>` : ''}`;
+}
+function openInviter(){
+  $('#modal').innerHTML = `<form id="iform" novalidate><div class="mh"><h2>Inviter eier</h2><button type="button" class="x" data-act="close" aria-label="Lukk">×</button></div>
+    <div class="fgrid"><label class="fld"><span class="lab">Navn</span><input id="i_navn" class="inp" autocomplete="off"></label>
+    <label class="fld"><span class="lab">E-post</span><input id="i_epost" class="inp" type="email" autocomplete="off"></label>
+    <label class="fld full"><span class="lab">Tilgang</span><select id="i_rolle" class="inp">${Object.entries(ROLLE).map(([k, v]) => `<option value="${k}" ${k === 'skriv' ? 'selected' : ''}>${v}</option>`).join('')}</select></label></div>
+    <div class="ferr" id="ferr" hidden></div>
+    <div class="mf"><span class="sp"></span><button type="button" class="btn" data-act="close">Avbryt</button><button class="btn primary" type="submit">Lag invitasjon</button></div></form>`;
+  M = {col: null}; $('#mb').hidden = false; $('#i_navn').focus();
+  $('#iform').addEventListener('submit', async e => {
+    e.preventDefault();
+    const navn = $('#i_navn').value.trim(), epost = $('#i_epost').value.trim(), rolle = $('#i_rolle').value;
+    try { const r = await api('/api/users', {action: 'inviter', navn, epost, rolle});
+      sisteLenke = {navn, url: location.origin + r.lenke, dager: r.dager}; closeModal(); await hentBrukere(); render(); }
+    catch (er){ const fe = $('#ferr'); fe.textContent = er.message; fe.hidden = false; }
+  });
+}
+function openPassord(){
+  $('#modal').innerHTML = `<form id="pform" novalidate><div class="mh"><h2>Bytt passord</h2><button type="button" class="x" data-act="close" aria-label="Lukk">×</button></div>
+    <div class="fgrid"><label class="fld full"><span class="lab">Nåværende passord</span><input id="p_g" class="inp" type="password" autocomplete="current-password"></label>
+    <label class="fld full"><span class="lab">Nytt passord</span><input id="p_n" class="inp" type="password" autocomplete="new-password"><span class="hint">Minst 10 tegn</span></label></div>
+    <div class="ferr" id="ferr" hidden></div>
+    <div class="mf"><span class="sp"></span><button type="button" class="btn" data-act="close">Avbryt</button><button class="btn primary" type="submit">Lagre</button></div></form>`;
+  M = {col: null}; $('#mb').hidden = false; $('#p_g').focus();
+  $('#pform').addEventListener('submit', async e => {
+    e.preventDefault();
+    try { await api('/api/auth', {action: 'bytt-passord', gammelt: $('#p_g').value, nytt: $('#p_n').value}); closeModal(); toast('Passordet er byttet'); }
+    catch (er){ const fe = $('#ferr'); fe.textContent = er.message; fe.hidden = false; }
+  });
+}
+
+/* ---------- ruting og rendering ---------- */
+const ROUTES = { oversikt:vOversikt, gjoremal:vGjoremal, eiendommer:vEiendommer, leietakere:vLeietakere, innbetalinger:vInnbetalinger, okonomi:vOkonomi, saldo:vSaldo, forsikringer:vForsikringer, eiere:vEiere };
+const NAV = [
+  {h:'oversikt', t:'Oversikt', i:'home'},
+  {h:'gjoremal', t:'Gjøremål', i:'tasks', b:() => S.gjoremal?.filter(g => !g.ferdig).length},
+  {g:'Portefølje'},
+  {h:'eiendommer', t:'Eiendommer', i:'building', b:() => S.eiendommer?.length},
+  {h:'leietakere', t:'Leietakere', i:'people', b:() => S.leietakere?.filter(l => erAktiv(l, curYM())).length},
+  {h:'innbetalinger', t:'Innbetalinger', i:'pay', b:() => S.leietakere && S.betalinger ? utestaende().length : 0, bad:true},
+  {g:'Økonomi'},
+  {h:'okonomi', t:'Økonomi', i:'chart'},
+  {h:'saldo', t:'Saldobalanse', i:'ledger', b:() => S.saldobalanser?.length},
+  {h:'forsikringer', t:'Forsikringer', i:'shield', b:() => S.forsikringer?.filter(forsMangler).length},
+  {g:'Selskapet'},
+  {h:'eiere', t:'Eiere og tilgang', i:'people'},
+];
+const route = () => { const h = location.hash.slice(1); return ROUTES[h] ? h : 'oversikt'; };
+function renderNav(){
+  const r = route();
+  $('#nav').innerHTML = NAV.map(n => {
+    if (n.g) return `<div class="ng">${n.g}</div>`;
+    const b = n.b ? n.b() : 0;
+    return `<a href="#${n.h}" class="${r === n.h ? 'on' : ''}" ${r === n.h ? 'aria-current="page"' : ''}>${ico(n.i)}<span>${n.t}</span>${b ? `<span class="badge ${n.bad ? 'bad' : ''}">${b}</span>` : ''}</a>`;
+  }).join('');
+}
+function renderMe(){
+  if (!me){ $('#me').innerHTML = ''; return; }
+  $('#me').innerHTML = `<img alt="" src="${esc(me.avatarUrl)}"><div style="min-width:0"><b></b><span>${esc(ROLLE[me.rolle] || '')}</span>
+    <div class="acts"><button class="linkbtn" data-act="passord">Bytt passord</button><button class="linkbtn" data-act="loggut">Logg ut</button></div></div>`;
+  $('#me b').textContent = me.name || 'Deg';
+}
+let raf = 0;
+function render(){ cancelAnimationFrame(raf); raf = requestAnimationFrame(doRender); }
+function doRender(){
+  renderNav();
+  const v = $('#view');
+  if (COLS.some(c => S[c] === null)){ v.innerHTML = '<p class="muted">Henter data …</p>'; return; }
+  let html = ROUTES[route()]();
+  if (offline) html = `<div class="note-bar">Mistet forbindelsen til serveren. Last siden på nytt.</div>` + html;
+  else if (!canWrite) html = `<div class="note-bar">Du kan se alt, men ikke endre. Be en administrator om å gi deg tilgangen «Kan endre».</div>` + html;
+  v.innerHTML = html;
+  fillNames();
+}
+
+/* ---------- hendelser ---------- */
+document.addEventListener('click', async ev => {
+  const t = ev.target.closest('[data-act]'); if (!t) return;
+  const a = t.dataset.act;
+  if (a === 'menu'){ const s = $('#side'); s.classList.toggle('open'); t.setAttribute('aria-expanded', s.classList.contains('open')); return; }
+  if (a === 'close') return closeModal();
+  if (a === 'del') return delDoc();
+  if (a === 'goto'){ location.hash = t.dataset.h; return; }
+  if (a === 'new'){ let def = {}; try { def = JSON.parse(t.dataset.def || '{}'); } catch {} return openForm(t.dataset.col, null, def); }
+  if (a === 'edit'){ const d = (S[t.dataset.col] || []).find(x => x.id === t.dataset.id); if (d) openForm(t.dataset.col, d); return; }
+  if (a === 'month'){ const d = +t.dataset.d; payYM = d === 0 ? curYM() : shiftYM(payYM, d); render(); return; }
+  if (a === 'tab'){ taskTab = t.dataset.t; render(); return; }
+  if (a === 'pay'){
+    const l = S.leietakere.find(x => x.id === t.dataset.l), ym = t.dataset.ym; if (!l) return;
+    openForm('betalinger', null, {belop: l.leieMnd, betaltDato: todayISO()}, `${l.id}_${ym}`,
+      `<p class="muted" style="margin:-6px 0 18px">${esc(l.navn)} · ${esc(eNavn(l.eiendomId))} · leie for ${mLabel(ym)}</p>`);
+    M.extraVals = {leietakerId: l.id, eiendomId: l.eiendomId, periode: ym};
+    return;
+  }
+  if (a === 'editpay'){ const b = S.betalinger.find(x => x.id === t.dataset.id); if (b){ const l = S.leietakere.find(x => x.id === b.leietakerId);
+    openForm('betalinger', b, {}, null, `<p class="muted" style="margin:-6px 0 18px">${esc(l?.navn || '')} · leie for ${mLabel(b.periode)}</p>`); } return; }
+  if (a === 'sb-vis'){ sbYM = t.dataset.ym; render(); window.scrollTo(0, 0); return; }
+  if (a === 'sb-nav'){ const L = sbListeAlle(), i = L.findIndex(x => x.periode === sbYM) + (+t.dataset.d); if (L[i]){ sbYM = L[i].periode; render(); } return; }
+  if (a === 'inviter') return openInviter();
+  if (a === 'passord') return openPassord();
+  if (a === 'loggut'){ try { await api('/api/auth', {action: 'logout'}); } catch {} location.href = '/'; return; }
+  if (a === 'kopier'){ const i = $('#lenke'); i.select(); try { await navigator.clipboard.writeText(i.value); toast('Lenken er kopiert'); } catch { document.execCommand('copy'); toast('Lenken er kopiert'); } return; }
+  if (a === 'ny-lenke'){ try { const r = await api('/api/users', {action: 'ny-lenke', id: t.dataset.id}); sisteLenke = {navn: t.dataset.navn, url: location.origin + r.lenke, dager: r.dager}; await hentBrukere(); render(); window.scrollTo(0, 0); } catch (e){ toast(e.message, true); } return; }
+  if (a === 'fjern'){
+    if (t.dataset.armed !== '1'){ t.dataset.armed = '1'; t.classList.add('armed'); t.textContent = 'Trykk igjen'; return; }
+    try { await api('/api/users', {action: 'fjern', id: t.dataset.id}); await hentBrukere(); render(); toast('Fjernet'); } catch (e){ toast(e.message, true); } return;
+  }
+  if (a === 'toggle'){
+    if (!canWrite || !db) return;
+    const g = S.gjoremal.find(x => x.id === t.dataset.id); if (!g) return;
+    try { await db.collection('gjoremal').doc(g.id).update({ferdig: !g.ferdig, ferdigDato: !g.ferdig ? todayISO() : null, ferdigAv: !g.ferdig ? (me?.id || null) : null}); }
+    catch (e){ toast(errMsg(e), true); }
+  }
+});
+document.addEventListener('change', async ev => {
+  const id = ev.target.dataset?.rolle; if (!id) return;
+  try { await api('/api/users', {action: 'rolle', id, rolle: ev.target.value}); await hentBrukere(); toast('Tilgangen er endret'); } catch (e){ toast(e.message, true); render(); }
+});
+$('#mb').addEventListener('click', e => { if (e.target.id === 'mb') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && M) closeModal(); });
+window.addEventListener('hashchange', () => { $('#side').classList.remove('open'); render(); window.scrollTo(0, 0); });
+
+/* ---------- API og innlogging ---------- */
+async function api(url, data){
+  const r = await fetch(url, data ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data), credentials: 'same-origin'} : {credentials: 'same-origin'});
+  let j = {}; try { j = await r.json(); } catch {}
+  if (r.status === 401 && url !== '/api/auth'){ location.reload(); throw new Error('Logget ut'); }
+  if (!r.ok) throw Object.assign(new Error(j.melding || 'Noe gikk galt. Prøv igjen.'), {code: j.error});
+  return j;
+}
+async function lastData(){
+  try { const r = await api('/api/data'); COLS.forEach(c => S[c] = r.data[c] || []); offline = false; }
+  catch { offline = true; COLS.forEach(c => { if (S[c] === null) S[c] = []; }); }
+  render();
+}
+/* samme grensesnitt som den gamle databasen, så resten av koden er uendret */
+db = { collection: c => ({
+  add: async data => { const r = await api('/api/data', {op: 'add', col: c, data}); await lastData(); return r; },
+  doc: id => ({
+    set: async data => { await api('/api/data', {op: 'set', col: c, id, data}); await lastData(); },
+    update: async data => { await api('/api/data', {op: 'update', col: c, id, data}); await lastData(); },
+    delete: async () => { await api('/api/data', {op: 'delete', col: c, id}); await lastData(); }
+  })
+})};
+const avatar = navn => { const ini = (navn || '?').split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+  return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="72" height="72" rx="36" fill="#9C6A1C"/><text x="36" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">${ini.replace(/[<&>]/g, '')}</text></svg>`); };
+user = {
+  profiles: async ids => Object.fromEntries(ids.map(id => { const b = brukere.find(x => x.id === id); return [id, b ? {name: b.navn} : null]; })),
+  search: async q => brukere.filter(b => !q || b.navn.toLowerCase().includes(q.toLowerCase())).map(b => ({id: b.id, name: b.navn, avatarUrl: avatar(b.navn), isMe: b.id === me?.id}))
+};
+
+function authSide(innhold){
+  document.querySelector('.app').hidden = true;
+  let w = $('#auth'); if (!w){ w = document.createElement('div'); w.id = 'auth'; w.className = 'auth'; document.body.prepend(w); }
+  w.innerHTML = `<div class="card"><div class="brand"><span>LV</span><span class="bar"></span><span>EIENDOM AS</span></div>${innhold}</div>`;
+  return w;
+}
+function feltErr(w, msg){ const e = w.querySelector('.ferr'); e.textContent = msg; e.hidden = false; }
+function visLogin(harBrukere){
+  if (!harBrukere) return visOppstart();
+  const w = authSide(`<h2 style="margin-bottom:6px">Eierportal</h2><p>Logg inn med e-post og passord.</p>
+    <form id="lf" novalidate><label class="fld"><span class="lab">E-post</span><input id="l_e" class="inp" type="email" autocomplete="username" required></label>
+    <label class="fld"><span class="lab">Passord</span><input id="l_p" class="inp" type="password" autocomplete="current-password" required></label>
+    <div class="ferr" hidden></div><button class="btn primary" type="submit">Logg inn</button>
+    <p class="small" style="margin-top:8px">Glemt passordet? Be en administrator om en ny lenke.</p></form>`);
+  $('#l_e').focus();
+  $('#lf').addEventListener('submit', async e => { e.preventDefault();
+    try { await api('/api/auth', {action: 'login', epost: $('#l_e').value, passord: $('#l_p').value}); location.reload(); }
+    catch (er){ feltErr(w, er.message); } });
+}
+function visOppstart(){
+  const w = authSide(`<h2 style="margin-bottom:6px">Sett opp portalen</h2><p>Opprett den første administratoren. Du trenger oppstartskoden.</p>
+    <form id="of" novalidate><label class="fld"><span class="lab">Navn</span><input id="o_n" class="inp" autocomplete="name"></label>
+    <label class="fld"><span class="lab">E-post</span><input id="o_e" class="inp" type="email" autocomplete="username"></label>
+    <label class="fld"><span class="lab">Passord</span><input id="o_p" class="inp" type="password" autocomplete="new-password"><span class="hint">Minst 10 tegn</span></label>
+    <label class="fld"><span class="lab">Oppstartskode</span><input id="o_k" class="inp" autocomplete="off"></label>
+    <div class="ferr" hidden></div><button class="btn primary" type="submit">Opprett og logg inn</button></form>`);
+  $('#of').addEventListener('submit', async e => { e.preventDefault();
+    try { await api('/api/auth', {action: 'oppstart', navn: $('#o_n').value, epost: $('#o_e').value, passord: $('#o_p').value, kode: $('#o_k').value}); location.href = '/'; }
+    catch (er){ feltErr(w, er.message); } });
+}
+async function visInvitasjon(token){
+  let info;
+  try { info = await api('/api/auth', {action: 'invitasjon-info', token}); }
+  catch (er){ authSide(`<h2 style="margin-bottom:6px">Lenken virker ikke</h2><p>${esc(er.message)}</p><a class="btn" href="/">Til innlogging</a>`); return; }
+  const w = authSide(`<h2 style="margin-bottom:6px">Velkommen, ${esc(info.navn)}</h2><p>Velg et passord for ${esc(info.epost)}.</p>
+    <form id="vf" novalidate><input type="email" autocomplete="username" value="${esc(info.epost)}" hidden>
+    <label class="fld"><span class="lab">Passord</span><input id="v_p" class="inp" type="password" autocomplete="new-password"><span class="hint">Minst 10 tegn</span></label>
+    <label class="fld"><span class="lab">Gjenta passordet</span><input id="v_p2" class="inp" type="password" autocomplete="new-password"></label>
+    <div class="ferr" hidden></div><button class="btn primary" type="submit">Lagre og logg inn</button></form>`);
+  $('#v_p').focus();
+  $('#vf').addEventListener('submit', async e => { e.preventDefault();
+    if ($('#v_p').value !== $('#v_p2').value) return feltErr(w, 'Passordene er ikke like.');
+    try { await api('/api/auth', {action: 'invitasjon', token, passord: $('#v_p').value}); location.href = '/'; }
+    catch (er){ feltErr(w, er.message); } });
+}
+
+(async function init(){
+  const inv = new URLSearchParams(location.search).get('invitasjon');
+  if (inv){ history.replaceState(null, '', '/'); return visInvitasjon(inv); }
+  let a;
+  try { a = await api('/api/auth'); }
+  catch { authSide('<h2>Får ikke kontakt med serveren</h2><p>Prøv igjen om litt.</p>'); return; }
+  if (!a.bruker) return visLogin(a.harBrukere);
+  me = {id: a.bruker.id, name: a.bruker.navn, rolle: a.bruker.rolle, avatarUrl: avatar(a.bruker.navn), isOwner: a.bruker.rolle === 'admin'};
+  canWrite = a.bruker.rolle === 'admin' || a.bruker.rolle === 'skriv';
+  render();
+  await hentBrukere();
+  renderMe();
+  await lastData();
+  setInterval(() => { if (document.visibilityState === 'visible' && !M) lastData(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !M) lastData(); });
+})();
+</script>
+
+
+</body></html>

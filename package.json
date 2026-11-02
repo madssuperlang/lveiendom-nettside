@@ -1,0 +1,9 @@
+{
+  "name": "lveiendom",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@neondatabase/serverless": "1.0.2",
+    "bcryptjs": "2.4.3"
+  }
+}
