@@ -17,7 +17,7 @@ def cut(start, end, new):
     s = s[:i] + new + s[j:]
 
 # ---------- hode ----------
-rep('<!doctype html><html><head>', '<!doctype html><html lang="nb"><head><title>LV Eiendom – eierportal</title><meta name="robots" content="noindex,nofollow">')
+rep('<!doctype html><html><head>', '<!doctype html><html lang="nb"><head><title>LV Eiendom – eierportal</title><meta name="robots" content="noindex,nofollow"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/apple-touch-icon.png">')
 rep('<title>LV Eiendom</title>\n<meta name="claude:viewport-fit-sides" content="cover">\n', '')
 
 # ---------- ekstra stil: innloggingsside ----------
