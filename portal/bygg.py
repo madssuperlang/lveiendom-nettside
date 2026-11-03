@@ -30,6 +30,24 @@ rep('.toast{position:fixed', '''.auth{min-height:100vh;display:grid;place-items:
 .me .acts{display:flex;gap:12px;margin-top:4px}
 .me .acts .linkbtn{font-size:13px}
 .copy{display:flex;gap:8px}.copy .inp{font-size:14px}
+.ep{padding:28px}
+.ep-h{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.ep-h h2{font-size:24px}
+.ep-h .addr{color:var(--mut);margin-top:6px}
+.ep .kpis{margin-bottom:22px}
+.ep .kpi .v{font-size:24px}
+.ep-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.ep-cols h3{margin:0 0 10px;color:var(--acc)}
+.ep-t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:15px}
+.ep-t td{padding:8px 0;border-top:1px solid var(--line)}
+.ep-t td:last-child{text-align:right;white-space:nowrap;padding-left:12px}
+.ep-t tr.sum td{font-weight:700;border-top:2px solid var(--line)}
+.ep-t .mut{color:var(--mut)}
+.ep-foot{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:22px}
+.ep-box{background:var(--panel-2);border-radius:12px;padding:14px 16px;font-size:15px}
+.ep-box b.l{display:block;font:600 12px/1.2 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+@media (max-width:1100px){.ep-cols{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.ep{padding:18px}.ep-cols,.ep-foot{grid-template-columns:1fr}.ep .kpi .v{font-size:19px}.ep-h h2{font-size:20px}}
 .toast{position:fixed''')
 
 # ---------- skjema for saldobalanse (manuell) ----------
@@ -259,6 +277,53 @@ rep("  {h:'forsikringer', t:'Forsikringer', i:'shield', b:() => S.forsikringer?.
     "  {h:'forsikringer', t:'Forsikringer', i:'shield', b:() => S.forsikringer?.filter(forsMangler).length},\n  {g:'Selskapet'},\n  {h:'eiere', t:'Eiere og tilgang', i:'people'},\n];")
 
 # ---------- «meg» nederst i menyen ----------
+cut('function vEiendommer(){', 'function vLeietakere(){', r"""function vEiendommer(){
+  const E = S.eiendommer;
+  const rad = (l, v, cls = '') => `<tr class="${cls}"><td>${l}</td><td>${v}</td></tr>`;
+  const minus = n => n ? `<span class="neg">−${kr(n)}</span>` : kr(0);
+  return head('Portefølje', 'Eiendommer', 'Kjøp, finansiering og drift for hver eiendom. Tallene regnes ut fra feltene du fyller inn, og leien hentes fra aktive leiekontrakter.', addBtn('eiendommer', 'Ny eiendom')) +
+  (E.length ? E.map(e => {
+    const c = calc(e), L = aktive(e.id), okning = c.verdi - num(e.kjopesum);
+    return `<article class="card ep">
+      <div class="ep-h"><div><div class="row"><h2>${esc(e.navn)}</h2>${c.ledig ? chip('warn', 'Ledig') : chip('ok', 'Utleid')}</div>
+        <div class="addr">${esc(e.adresse || '')}${e.type ? ' · ' + esc(e.type) : ''}${e.m2 ? ' · ' + nf.format(e.m2) + ' m²' : ''}${e.m2 && c.leie ? ' · ' + kr(c.leie / num(e.m2)) + ' per m² i året' : ''}</div></div>
+        <div class="row"><button class="btn sm" data-act="edit" data-col="eiendommer" data-id="${esc(e.id)}">${canWrite ? 'Rediger' : 'Detaljer'}</button>
+        ${canWrite && !L.length ? `<button class="btn sm" data-act="new" data-col="leietakere" data-def='${esc(JSON.stringify({eiendomId: e.id, forfallsdag: 1, betalingFra: curYM()}))}'>Legg til leietaker</button>` : ''}</div></div>
+      <div class="kpis">
+        <div class="kpi hl"><div class="l">Leie per måned</div><div class="v">${kr(c.leie / 12)}</div><div class="s">${c.kilde === 'budsjett' ? 'Budsjett, lokalet står ledig' : L.map(l => esc(l.navn)).join(', ')}</div></div>
+        <div class="kpi"><div class="l">Kontantstrøm per år</div><div class="v ${negc(c.cash)}">${kr(c.cash)}</div><div class="s">${kr(c.cash / 12)} per måned</div></div>
+        <div class="kpi"><div class="l">Brutto yield</div><div class="v">${pct(c.yld)}</div><div class="s">Avkastning EK ${pct(c.roe)}</div></div>
+        <div class="kpi"><div class="l">Verdi i dag</div><div class="v">${kr(c.verdi)}</div><div class="s">${num(e.kjopesum) ? (okning >= 0 ? '+' : '−') + kr(Math.abs(okning)) + ' siden kjøp' : ''}</div></div>
+      </div>
+      <div class="ep-cols">
+        <div><h3>Kjøp</h3><table class="ep-t"><tbody>
+          ${rad('Kjøpesum', kr(num(e.kjopesum)))}${rad('Dokumentavgift', kr(num(e.dokumentavgift)))}${rad('Etablering av lån', kr(num(e.etablering)))}${rad('Omkostninger', kr(num(e.omkostninger)))}
+          ${rad('Oppgraderinger' + (e.oppgraderingTekst ? ` <span class="mut">(${esc(e.oppgraderingTekst)})</span>` : ''), kr(num(e.oppgradering)))}
+          ${rad('Totalt investert', kr(c.total), 'sum')}${e.kjopsdato ? rad('Kjøpt', fmtDate(e.kjopsdato)) : ''}
+        </tbody></table></div>
+        <div><h3>Finansiering</h3><table class="ep-t"><tbody>
+          ${rad('Lån' + (e.lanPer ? ` <span class="mut">(per ${esc(mLabel(e.lanPer))})</span>` : ''), kr(c.lan))}${rad('Egenkapital', kr(c.ek))}
+          ${rad('Rente', e.rentesats != null && e.rentesats !== '' ? nfIn.format(num(e.rentesats)) + ' %' : '–')}${rad('Renter per år', kr(c.rente))}
+          ${rad('Avdrag per år', kr(c.avdrag))}${rad('Belåningsgrad', pct(c.ltv), 'sum')}${e.bank ? rad('Bank', esc(e.bank)) : ''}
+        </tbody></table></div>
+        <div><h3>Drift per år</h3><table class="ep-t"><tbody>
+          ${rad('Leieinntekter' + (c.kilde === 'budsjett' ? ' <span class="mut">(budsjett)</span>' : ''), kr(c.leie))}
+          ${rad('Felleskostnader', c.fellesUkjent ? chip('info', 'Ikke avklart') : minus(c.felles))}${rad('Forsikring', minus(c.fors))}${rad('Andre kostnader', minus(c.andre))}
+          ${rad('Netto drift', kr(c.netto), 'sum')}${rad('Renter', minus(c.rente))}${rad('Avdrag', minus(c.avdrag))}
+          ${rad('Kontantstrøm', `<span class="${negc(c.cash)}">${kr(c.cash)}</span>`, 'sum')}
+        </tbody></table></div>
+      </div>
+      <div class="ep-foot">
+        <div class="ep-box"><b class="l">Leietaker</b>${L.length ? L.map(l => `<div><b>${esc(l.navn)}</b> · ${kr(l.leieMnd)} / mnd${l.kontraktStart ? ' · fra ' + fmtDate(l.kontraktStart) : ''}</div>`).join('') : '<span class="muted">Ingen aktiv leietaker</span>'}</div>
+        ${e.finnKode ? `<div class="ep-box"><b class="l">FINN</b><div class="row" style="gap:6px 14px"><span><b>${esc(e.finnKode)}</b></span>${e.annonseStatus ? chip(e.annonseStatus === 'Aktiv' ? 'ok' : 'nodot', e.annonseStatus) : ''}${e.annonsePris ? `<span>${kr(e.annonsePris)} / mnd</span>` : ''}
+          <a href="https://www.finn.no/${encodeURIComponent(e.finnKode)}" target="_blank" rel="noopener">Åpne annonsen</a></div>
+          ${e.finnKlikk != null ? `<div class="muted small" style="margin-top:4px">${nf.format(e.finnKlikk)} klikk · ${nf.format(e.finnBesokende || 0)} besøkende · ${nf.format(e.finnFavoritter || 0)} favoritter</div>` : ''}</div>` : '<div></div>'}
+      </div>
+      ${e.notat ? `<p class="small muted" style="margin:16px 0 0;max-width:90ch">${esc(e.notat)}</p>` : ''}
+    </article>`; }).join('') : empty('Ingen eiendommer ennå', 'Legg inn kjøpesum, lån og leie, så regner portalen ut yield og kontantstrøm.', addBtn('eiendommer', 'Ny eiendom')));
+}
+
+""")
 cut('function renderMe(){', 'let raf = 0;', '''function renderMe(){
   if (!me){ $('#me').innerHTML = ''; return; }
   $('#me').innerHTML = `<img alt="" src="${esc(me.avatarUrl)}"><div style="min-width:0"><b></b><span>${esc(ROLLE[me.rolle] || '')}</span>
