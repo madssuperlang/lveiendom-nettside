@@ -775,19 +775,118 @@ function sbTall(d){
   return { rest: num(d.restgjeld), oss: num(d.gjeldTilOss), bank: num(d.bank), inn, kost,
     res: d.resultat != null && d.resultat !== '' ? num(d.resultat) : inn - kost };
 }
+const SB_TEKST = 'Last opp saldobalansen som CSV fra regnskapssystemet. Portalen leser kontoene og fyller ut restgjeld, gjeld til eierne, bank, inntekter, kostnader og resultat.';
+/* tall på norsk format: «1 297 675,00», «-30 000,00», «(1 234,50)» */
+function sbTallFra(v){
+  let t = String(v ?? '').replace(/["\s  ]/g, '');
+  if (!t || t === '-') return null;
+  let neg = false;
+  if (/^\(.*\)$/.test(t)){ neg = true; t = t.slice(1, -1); }
+  if (t.endsWith('-')){ neg = !neg; t = t.slice(0, -1); }
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  const n = Number(t); return isFinite(n) ? (neg ? -n : n) : null;
+}
+function sbDelLinje(l, sep){
+  const out = []; let cur = '', q = false;
+  for (let i = 0; i < l.length; i++){
+    const c = l[i];
+    if (c === '"'){ if (q && l[i + 1] === '"'){ cur += '"'; i++; } else q = !q; }
+    else if (c === sep && !q){ out.push(cur); cur = ''; }
+    else cur += c;
+  }
+  out.push(cur); return out.map(x => x.trim());
+}
+function sbLesCsv(tekst){
+  const rader = tekst.replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim());
+  if (!rader.length) throw new Error('Filen er tom.');
+  const sep = [';', '\t', ','].map(s => [s, (rader[0].match(new RegExp(s === '\t' ? '\t' : s, 'g')) || []).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const tabell = rader.map(l => sbDelLinje(l, sep));
+  const hi = tabell.findIndex(r => r.some(c => /konto/i.test(c)));
+  const hode = hi >= 0 ? tabell[hi].map(c => c.toLowerCase()) : [];
+  const finn = re => hode.findIndex(c => re.test(c));
+  let kNr = finn(/kontonr|^konto$|kontonummer/), kNavn = finn(/navn|tekst|beskrivelse/), kUB = finn(/^ub$|utgående|utg\. ?saldo|^saldo/);
+  if (kNr < 0) kNr = 0; if (kNavn < 0) kNavn = 1;
+  const linjer = [];
+  for (const r of tabell.slice(hi + 1)){
+    const nr = (r[kNr] || '').replace(/\D/g, '');
+    if (!/^\d{4,}$/.test(nr)) continue;
+    let ub = kUB >= 0 ? sbTallFra(r[kUB]) : null;
+    if (ub == null){ for (let j = r.length - 1; j > kNavn; j--){ const v = sbTallFra(r[j]); if (v != null){ ub = v; break; } } }
+    if (ub == null) continue;
+    linjer.push({ konto: nr.slice(0, 4), navn: r[kNavn] || '', ub: Math.round(ub * 100) / 100 });
+  }
+  if (!linjer.length) throw new Error('Fant ingen kontolinjer. Sjekk at filen er en saldobalanse med kontonummer og saldo.');
+  return linjer;
+}
+const EIER_RE = /gjeld til|aksjonær|eier|mellomregning|holding|nærstående/i;
+function sbGruppe(l){
+  const k = +l.konto;
+  if (k < 1900) return 'eiendel';
+  if (k < 2000) return 'bank';
+  if (k < 2100) return 'egenkapital';
+  if (k >= 2200 && k < 2250) return 'restgjeld';
+  if ((k >= 2250 && k < 2300) || (k >= 2900 && k < 3000 && EIER_RE.test(l.navn))) return 'eiere';
+  if (k < 3000) return 'annenGjeld';
+  if (k < 4000 || (k >= 8000 && k < 8100)) return 'inntekt';
+  return 'kostnad';
+}
+function sbBeregn(linjer){
+  const s = g => linjer.filter(l => sbGruppe(l) === g).reduce((a, l) => a + l.ub, 0);
+  const r2 = n => Math.round(n * 100) / 100;
+  const inn = r2(-s('inntekt')), kost = r2(s('kostnad'));
+  return { restgjeld: r2(-s('restgjeld')), gjeldTilOss: r2(-s('eiere')), bank: r2(s('bank')), inntekter: inn, kostnader: kost, resultat: r2(inn - kost) };
+}
+function sbGjettYM(filnavn, tekst){
+  const m = String(filnavn).match(/(20\d{2})[-_.]?(\d{2})[-_.]?(\d{2})/);
+  if (m){ const d = new Date(+m[1], +m[2] - 1, +m[3] - 10); return d.getFullYear() + '-' + pad(d.getMonth() + 1); }
+  let best = null;
+  for (const x of String(tekst).slice(0, 4000).matchAll(/\b(\d{1,2})\.(\d{1,2})\.(20\d{2})\b/g)){ const ym = x[3] + '-' + pad(+x[2]); if (+x[2] >= 1 && +x[2] <= 12 && (!best || ym > best)) best = ym; }
+  return best || shiftYM(curYM(), -1);
+}
+async function sbLesFil(file){
+  const buf = await file.arrayBuffer();
+  let t = new TextDecoder('utf-8').decode(buf);
+  if (t.includes('�')) t = new TextDecoder('windows-1252').decode(buf);
+  return t;
+}
+async function sbImporter(file){
+  if (!file) return;
+  if (!/\.(csv|txt|skv)$/i.test(file.name)) return toast('Velg en CSV-fil. Excel-filer må lagres som CSV først.', true);
+  try {
+    const tekst = await sbLesFil(file), linjer = sbLesCsv(tekst), tall = sbBeregn(linjer), periode = sbGjettYM(file.name, tekst);
+    const finnes = (S.saldobalanser || []).some(x => x.periode === periode);
+    openForm('saldobalanser', null, {periode, ...tall}, null,
+      `<div class="note-bar small" style="margin:-6px 0 18px">Lest ${linjer.length} kontoer fra <b>${esc(file.name)}</b>. Sjekk måneden og tallene, og trykk Lagre.${finnes ? ' Det finnes allerede en saldobalanse for ' + mLabel(periode) + ', og den blir erstattet hvis du beholder samme måned.' : ''}</div>`);
+    M.extraVals = { linjer, filnavn: file.name, kilde: 'csv' };
+  } catch (e){ toast(e.message || 'Kunne ikke lese filen.', true); }
+}
+const SB_GRUPPER = [['eiendel', 'Eiendeler', 1], ['bank', 'Bank', 1], ['restgjeld', 'Lån fra bank', -1], ['eiere', 'Gjeld til eierne', -1], ['annenGjeld', 'Annen gjeld', -1], ['egenkapital', 'Egenkapital', -1], ['inntekt', 'Inntekter', -1], ['kostnad', 'Kostnader', 1]];
+function sbKontoer(d){
+  const L = Array.isArray(d.linjer) ? d.linjer.filter(l => l && Math.abs(num(l.ub)) >= 0.5) : [];
+  if (!L.length) return '';
+  const del = SB_GRUPPER.map(([g, navn, fortegn]) => {
+    const rows = L.filter(l => sbGruppe(l) === g); if (!rows.length) return '';
+    const sumG = rows.reduce((a, l) => a + num(l.ub), 0) * fortegn;
+    return `<tr class="em"><td colspan="2">${navn}</td><td class="r">${kr(sumG)}</td></tr>` +
+      rows.map(l => `<tr><td class="muted">${esc(l.konto)}</td><td>${esc(l.navn)}</td><td class="r">${kr(num(l.ub) * fortegn)}</td></tr>`).join('');
+  }).join('');
+  return `<section class="card"><div class="card-h"><h2>Kontoer</h2><span class="muted small">Utgående saldo per ${mLabel(d.periode)}. Gjeld, egenkapital og inntekter vises som positive tall.</span></div>
+    <div class="tw"><table class="tbl"><tbody>${del}</tbody></table></div></section>`;
+}
 function sbListeAlle(){ return (S.saldobalanser || []).filter(x => x.periode).sort((a, b) => b.periode.localeCompare(a.periode)); }
 function vSaldo(){
   const list = sbListeAlle();
   if (!sbYM || !list.some(x => x.periode === sbYM)) sbYM = list[0]?.periode || null;
   const d = list.find(x => x.periode === sbYM), i = list.indexOf(d), prev = list[i + 1];
-  const nyKnapp = addBtn('saldobalanser', 'Legg inn måned', `data-def='${esc(JSON.stringify({periode: shiftYM(curYM(), -1)}))}'`);
-  if (!d) return head('Økonomi', 'Saldobalanse', 'Tallene fra saldobalansen hver måned: restgjeld, gjeld til eierne, bank og resultat. Hent tallene fra regnskapet og legg dem inn her.', nyKnapp) +
-    empty('Ingen saldobalanser ennå', 'Be regnskapsføreren om saldobalansen for forrige måned, og legg inn de viktigste tallene.', nyKnapp);
+  const nyKnapp = (canWrite ? `<label class="btn primary" for="sb-csv" tabindex="0" role="button">Importer CSV</label><input type="file" id="sb-csv" accept=".csv,.txt,.skv,text/csv" hidden>` : '') +
+    (canWrite ? `<button class="btn" data-act="new" data-col="saldobalanser" data-def='${esc(JSON.stringify({periode: shiftYM(curYM(), -1)}))}'>Legg inn for hånd</button>` : '');
+  if (!d) return head('Økonomi', 'Saldobalanse', SB_TEKST, nyKnapp) +
+    empty('Ingen saldobalanser ennå', 'Eksporter saldobalansen fra regnskapssystemet som CSV og trykk «Importer CSV». Portalen fyller ut tallene selv.', '');
   const t = sbTall(d), p = prev ? sbTall(prev) : null;
   const dlt = k => { if (!p) return ''; const v = t[k] - p[k]; return `<div class="s">${v === 0 ? 'Uendret' : (v > 0 ? '+' : '−') + kr(Math.abs(v))} fra ${mShort(prev.periode)}</div>`; };
   const lanPortal = sum(S.eiendommer || [], e => num(e.lan)), avvik = Math.round(t.rest - lanPortal);
   const nav = list.length > 1 ? `<div class="mnav"><button class="iconbtn" data-act="sb-nav" data-d="1" ${i >= list.length - 1 ? 'disabled' : ''} aria-label="Eldre måned">‹</button><b>${mLabel(d.periode)}</b><button class="iconbtn" data-act="sb-nav" data-d="-1" ${i <= 0 ? 'disabled' : ''} aria-label="Nyere måned">›</button></div>` : '';
-  return head('Økonomi', 'Saldobalanse', 'Tallene fra saldobalansen hver måned: restgjeld, gjeld til eierne, bank og resultat. Hent tallene fra regnskapet og legg dem inn her.', nyKnapp) + `
+  return head('Økonomi', 'Saldobalanse', SB_TEKST, nyKnapp) + `
   <section class="card"><div class="card-h"><h2>Saldobalanse ${mLabel(d.periode)}</h2><div class="row">${nav}<button class="btn sm" data-act="edit" data-col="saldobalanser" data-id="${esc(d.id)}">${canWrite ? 'Rediger' : 'Detaljer'}</button></div></div>
     <div class="kpis">
       <div class="kpi hl"><div class="l">Restgjeld bank</div><div class="v">${kr(t.rest)}</div>${dlt('rest')}</div>
@@ -807,7 +906,9 @@ function vSaldo(){
         ${avvik !== 0 && t.rest ? '<p class="hint" style="margin:10px 0 0">Oppdater lånet på hver eiendom under Eiendommer → Rediger, så stemmer økonomitallene.</p>' : ''}</div>
     </div>
     ${d.notat ? `<p class="muted" style="margin:18px 0 0;max-width:75ch">${esc(d.notat)}</p>` : ''}
+    ${d.filnavn ? `<p class="muted small" style="margin:14px 0 0">Importert fra ${esc(d.filnavn)}</p>` : ''}
   </section>
+  ${sbKontoer(d)}
   ${list.length > 1 ? `<section class="card"><div class="card-h"><h2>Utvikling</h2></div>
     <div class="tw"><table class="tbl"><thead><tr><th>Måned</th><th class="r">Restgjeld</th><th class="r">Gjeld til oss</th><th class="r">Bank</th><th class="r">Resultat hittil</th></tr></thead><tbody>
     ${list.map(x => { const q = sbTall(x); return `<tr class="click ${x.periode === sbYM ? 'em' : ''}" data-act="sb-vis" data-ym="${esc(x.periode)}"><td>${mLabel(x.periode)}</td><td class="r">${kr(q.rest)}</td><td class="r">${kr(q.oss)}</td><td class="r">${kr(q.bank)}</td><td class="r ${negc(q.res)}">${kr(q.res)}</td></tr>`; }).join('')}
@@ -947,11 +1048,12 @@ document.addEventListener('click', async ev => {
   }
 });
 document.addEventListener('change', async ev => {
+  if (ev.target.id === 'sb-csv'){ const f = ev.target.files?.[0]; ev.target.value = ''; return sbImporter(f); }
   const id = ev.target.dataset?.rolle; if (!id) return;
   try { await api('/api/users', {action: 'rolle', id, rolle: ev.target.value}); await hentBrukere(); toast('Tilgangen er endret'); } catch (e){ toast(e.message, true); render(); }
 });
 $('#mb').addEventListener('click', e => { if (e.target.id === 'mb') closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && M) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && M) closeModal(); if ((e.key === 'Enter' || e.key === ' ') && e.target.getAttribute?.('for') === 'sb-csv'){ e.preventDefault(); $('#sb-csv').click(); } });
 window.addEventListener('hashchange', () => { $('#side').classList.remove('open'); render(); window.scrollTo(0, 0); });
 
 /* ---------- API og innlogging ---------- */
