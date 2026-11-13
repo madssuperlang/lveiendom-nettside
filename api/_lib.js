@@ -1,7 +1,7 @@
 // Felles kode for portal-API-et. Filer som starter med _ blir ikke egne endepunkter på Vercel.
 import crypto from 'node:crypto';
 
-export const COLS = ['eiendommer', 'leietakere', 'betalinger', 'gjoremal', 'forsikringer', 'poster', 'saldobalanser'];
+export const COLS = ['eiendommer', 'leietakere', 'betalinger', 'gjoremal', 'forsikringer', 'poster', 'saldobalanser', 'analyser'];
 export const ROLES = ['admin', 'skriv', 'les'];
 
 // Engangskode for å opprette den første administratoren. Bare hashen ligger her.

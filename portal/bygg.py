@@ -272,9 +272,9 @@ function openPassord(){
 ''')
 
 # ---------- ruting ----------
-rep("forsikringer:vForsikringer };", "forsikringer:vForsikringer, eiere:vEiere };")
-rep("  {h:'forsikringer', t:'Forsikringer', i:'shield', b:() => S.forsikringer?.filter(forsMangler).length},\n];",
-    "  {h:'forsikringer', t:'Forsikringer', i:'shield', b:() => S.forsikringer?.filter(forsMangler).length},\n  {g:'Selskapet'},\n  {h:'eiere', t:'Eiere og tilgang', i:'people'},\n];")
+rep("kalkulator:vKalkulator };", "kalkulator:vKalkulator, eiere:vEiere };")
+rep("  {h:'kalkulator', t:'Yield-kalkulator', i:'calc', b:() => S.analyser?.length},\n];",
+    "  {h:'kalkulator', t:'Yield-kalkulator', i:'calc', b:() => S.analyser?.length},\n  {g:'Selskapet'},\n  {h:'eiere', t:'Eiere og tilgang', i:'people'},\n];")
 
 # ---------- «meg» nederst i menyen ----------
 cut('function vEiendommer(){', 'function vLeietakere(){', r"""function vEiendommer(){
@@ -379,6 +379,7 @@ db = { collection: c => ({
     delete: async () => { await api('/api/data', {op: 'delete', col: c, id}); await lastData(); }
   })
 })};
+finnHent = url => api('/api/finn', {url});
 const avatar = navn => { const ini = (navn || '?').split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
   return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="72" height="72" rx="36" fill="#9C6A1C"/><text x="36" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">${ini.replace(/[<&>]/g, '')}</text></svg>`); };
 user = {
