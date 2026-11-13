@@ -215,8 +215,10 @@ textarea.inp{resize:vertical}
 .sb-merk{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:80ch}
 .btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
 .iconbtn:disabled{opacity:.35;cursor:default}
-.yk-hent{display:flex;gap:10px;flex-wrap:wrap}
-.yk-hent .inp{flex:1 1 320px}
+.yk-bm{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.yk-bm a.btn{cursor:grab;text-decoration:none}
+.yk-bm ol{margin:0;padding-left:20px;font-size:15px;flex:1 1 360px}
+@media (max-width:640px){.yk-bm{display:none}}
 .yk-msg{margin-top:10px;font-size:14px}
 .yk-msg.bad{color:var(--bad)}
 .yk-msg.ok{color:var(--ok)}
@@ -843,7 +845,16 @@ function vForsikringer(){
 }
 
 /* ---------- yield-kalkulator (FINN-annonse) ---------- */
-let finnHent = null; // settes av den publiserte portalen (henter annonsen via /api/finn)
+/* Bokmerket kjøres på FINN i brukerens egen nettleser (FINN stopper henting fra serveren vår)
+   og åpner portalen med annonseteksten i window.name. */
+const YK_PORTAL = /lveiendom\.no$|^localhost$/.test(location.hostname) ? location.origin : 'https://portal.lveiendom.no';
+const YK_BM = 'javascript:' + encodeURIComponent(`(()=>{if(!/(^|\\.)finn\\.no$/.test(location.hostname)){alert('Åpne en annonse på FINN først, og trykk på bokmerket der.');return}const m=document.querySelector('meta[property="og:title"]');window.open('${YK_PORTAL}/#kalkulator','lvfinn:'+JSON.stringify({u:location.href.split('#')[0],t:m?m.content:document.title,x:document.body.innerText.slice(0,150000)}))})()`);
+function ykFraBokmerke(){
+  if (!String(window.name).startsWith('lvfinn:')) return;
+  let d = null; try { d = JSON.parse(window.name.slice(7)); } catch {}
+  window.name = '';
+  if (d && d.x) ykBruk(finnLes(d.x), {url: d.u, tittel: d.t});
+}
 const YK_FAST = {ledigMnd:0.5, forsikringAr:3000, vedlikeholdPst:5, andreAr:0, ekPst:25, rente:5.5, ar:25, malYield:5};
 const YK_TOM = {id:null, url:'', finnKode:'', tittel:'', adresse:'', boligtype:'', eieform:'Selveier', areal:null, byggear:null, soverom:null,
   pris:null, fellesgjeld:null, omk:null, oppussing:null, leieMnd:null, felleskostMnd:null, kommunaleAr:null, eiendomsskattAr:null};
@@ -885,7 +896,7 @@ function finnLes(tekst){
   const finn = (labs, tall = true) => {
     for (const lab of labs) for (let i = 0; i < L.length; i++){
       const l = L[i];
-      if (l.slice(0, lab.length).toLowerCase() !== lab.toLowerCase() || /[a-zæøå]/i.test(l[lab.length] || '')) continue;
+      if (l.slice(0, lab.length).toLowerCase() !== lab.toLowerCase() || /[a-zæøå]/.test(l[lab.length] || '')) continue;
       let v = l.slice(lab.length).replace(/^[\s:\t]+/, '');
       if (!v) v = L[i + 1] || '';
       if (tall && !/^(ca\.?\s*|fra\s*|kr\.?\s*)*\d/i.test(v)) continue;
@@ -1014,16 +1025,16 @@ function ykLagrede(){
     </tbody></table></div></section>`;
 }
 function vKalkulator(){
-  const kanHente = !!finnHent;
-  return head('Kjøp', 'Yield-kalkulator', 'Lim inn en FINN-annonse, så hentes pris, fellesgjeld og felleskostnader. Legg inn forventet leie og lånevilkår, så regnes yield, kontantstrøm og maks bud ut.',
+  ykFraBokmerke();
+  return head('Kjøp', 'Yield-kalkulator', 'Hent en FINN-annonse, så fylles pris, fellesgjeld og felleskostnader inn. Legg inn forventet leie og lånevilkår, så regnes yield, kontantstrøm og maks bud ut.',
     `${yk.pris || yk.url ? `<button class="btn" data-act="yk-ny">Ny beregning</button>` : ''}${canWrite && yk.pris ? `<button class="btn" data-act="yk-eiendom">Opprett som eiendom</button><button class="btn primary" data-act="yk-lagre">${yk.id ? 'Lagre endringer' : 'Lagre analyse'}</button>` : ''}`) + `
   <div id="yk">
     <section class="card">
-      <div class="yk-hent"><input id="yk-url" class="inp" placeholder="${kanHente ? 'Lenke til FINN-annonse eller FINN-kode' : 'Henting fra FINN virker i portalen på portal.lveiendom.no'}" value="${esc(yk.url)}" ${kanHente ? '' : 'disabled'} autocomplete="off">
-        <button class="btn primary" data-act="yk-hent" ${kanHente ? '' : 'disabled'}>Hent annonse</button></div>
+      <div class="yk-bm"><a class="btn primary" href="${esc(YK_BM)}" data-act="yk-bm" draggable="true" title="Dra meg til bokmerkelinjen">LV: Regn yield</a>
+        <ol><li>Dra knappen opp til bokmerkelinjen i nettleseren (én gang).</li><li>Åpne en annonse på FINN og trykk på bokmerket. Portalen åpnes med tallene fra annonsen.</li></ol></div>
       <div class="yk-msg ${ykMsg?.k || ''}" id="yk-msg" ${ykMsg ? '' : 'hidden'} role="status">${esc(ykMsg?.t || '')}</div>
-      <details class="yk-lim" ${kanHente ? '' : 'open'}><summary>Eller lim inn teksten fra annonsen</summary>
-        <textarea id="yk-tekst" class="inp" placeholder="Åpne annonsen på FINN, merk alt (Ctrl/Cmd + A), kopier og lim inn her.">${esc(ykLim)}</textarea>
+      <details class="yk-lim"><summary>På mobil: lim inn teksten fra annonsen</summary>
+        <textarea id="yk-tekst" class="inp" placeholder="Åpne annonsen på FINN, merk all tekst, kopier og lim inn her.">${esc(ykLim)}</textarea>
         <div class="row" style="margin-top:10px"><button class="btn" data-act="yk-les">Les teksten</button></div></details>
       ${ykAnnonse()}
     </section>
@@ -1061,17 +1072,6 @@ function ykFokus(){
   const a = document.activeElement;
   return route() === 'kalkulator' && a && a.closest && a.closest('#yk') && a.matches('input,select,textarea');
 }
-async function ykHent(){
-  const url = ($('#yk-url')?.value || '').trim(), m = $('#yk-msg'), b = $('[data-act="yk-hent"]');
-  if (!url){ ykMsg = {k:'bad', t:'Lim inn en lenke til annonsen eller FINN-koden.'}; render(); return; }
-  if (!finnHent) return;
-  if (m){ m.hidden = false; m.className = 'yk-msg'; m.textContent = 'Henter annonsen fra FINN …'; }
-  if (b) b.disabled = true;
-  try { const r = await finnHent(url); ykBruk(finnLes(r.tekst), {url: r.url, tittel: r.tittel}); }
-  catch (e){ yk.url = url; ykMsg = {k:'bad', t: e.message || 'Kunne ikke hente annonsen.'}; }
-  if (document.activeElement?.closest?.('#yk')) document.activeElement.blur();
-  render();
-}
 async function ykLagre(){
   if (!db || !canWrite) return;
   const {id, ...data} = yk, now = new Date().toISOString(), c = ykCalc(yk);
@@ -1096,7 +1096,6 @@ document.addEventListener('input', evt => {
   if (evt.target.id === 'yk-tekst') ykLim = evt.target.value;
 });
 document.addEventListener('change', evt => { if (evt.target.id === 'yk_eieform') ykSett('eieform', evt.target); });
-document.addEventListener('keydown', evt => { if (evt.key === 'Enter' && evt.target.id === 'yk-url'){ evt.preventDefault(); ykHent(); } });
 document.addEventListener('focusout', evt => {
   const k = evt.target.dataset?.k; if (!k || !evt.target.closest('#yk') || evt.target.tagName !== 'INPUT') return;
   if (yk[k] != null && yk[k] !== '') evt.target.value = nfIn.format(num(yk[k]));
@@ -1104,7 +1103,7 @@ document.addEventListener('focusout', evt => {
 document.addEventListener('click', async evt => {
   const t = evt.target.closest('[data-act^="yk-"]'); if (!t) return;
   const a = t.dataset.act;
-  if (a === 'yk-hent') return ykHent();
+  if (a === 'yk-bm'){ evt.preventDefault(); toast('Dra knappen til bokmerkelinjen, og trykk på bokmerket når du står på en FINN-annonse.'); return; }
   if (a === 'yk-les'){
     ykLim = $('#yk-tekst')?.value || ykLim;
     if (!ykLim.trim()){ ykMsg = {k:'bad', t:'Lim inn teksten fra annonsen først.'}; render(); return; }
@@ -1440,7 +1439,6 @@ db = { collection: c => ({
     delete: async () => { await api('/api/data', {op: 'delete', col: c, id}); await lastData(); }
   })
 })};
-finnHent = url => api('/api/finn', {url});
 const avatar = navn => { const ini = (navn || '?').split(/\s+/).map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
   return 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect width="72" height="72" rx="36" fill="#9C6A1C"/><text x="36" y="45" font-family="Arial" font-size="28" font-weight="700" fill="#fff" text-anchor="middle">${ini.replace(/[<&>]/g, '')}</text></svg>`); };
 user = {
