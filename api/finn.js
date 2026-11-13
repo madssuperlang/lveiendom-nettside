@@ -4,6 +4,7 @@ import { handler, body, send, HttpError, requireUser, checkOrigin } from './_lib
 
 const VERTER = new Set(['finn.no', 'www.finn.no', 'm.finn.no']);
 const MAKS_TEGN = 3_000_000;
+export const maxDuration = 25;
 
 export function finnUrl(inn){
   const s = String(inn || '').trim();
@@ -44,29 +45,38 @@ async function hent(url){
   for (let i = 0; i < 5; i++){
     let r;
     try {
-      r = await fetch(u, { redirect: 'manual', signal: AbortSignal.timeout(8000), headers: {
+      r = await fetch(u, { redirect: 'manual', signal: AbortSignal.timeout(15000), headers: {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'nb-NO,nb;q=0.9,no;q=0.8' } });
-    } catch { throw new HttpError(502, 'finn_down', 'Fikk ikke kontakt med FINN. Prøv igjen, eller lim inn annonseteksten.'); }
+    } catch { throw new HttpError(424, 'finn_down', 'Fikk ikke kontakt med FINN. Prøv igjen, eller lim inn annonseteksten.'); }
     if (r.status >= 300 && r.status < 400 && r.headers.get('location')){
       u = finnUrl(new URL(r.headers.get('location'), u).href);
       continue;
     }
     if (r.status === 404 || r.status === 410) throw new HttpError(404, 'finn_404', 'Fant ikke annonsen. Den kan være solgt eller fjernet.');
-    if (!r.ok) throw new HttpError(502, 'finn_blocked', 'FINN ville ikke gi fra seg annonsen akkurat nå. Lim inn annonseteksten i stedet.');
-    const html = (await r.text()).slice(0, MAKS_TEGN);
+    if (!r.ok) throw new HttpError(424, 'finn_blocked', `FINN ville ikke gi fra seg annonsen (svar ${r.status}). Lim inn annonseteksten i stedet.`);
+    let html;
+    try { html = (await r.text()).slice(0, MAKS_TEGN); }
+    catch { throw new HttpError(424, 'finn_slow', 'FINN brukte for lang tid på å svare. Prøv igjen, eller lim inn annonseteksten.'); }
     return { html, url: u.href };
   }
-  throw new HttpError(502, 'finn_redirect', 'FINN sendte oss rundt i ring. Lim inn annonseteksten i stedet.');
+  throw new HttpError(424, 'finn_redirect', 'FINN sendte oss rundt i ring. Lim inn annonseteksten i stedet.');
 }
 
 export default handler(async (req, res) => {
   checkOrigin(req);
   if (req.method !== 'POST') throw new HttpError(405, 'method', 'Ikke tillatt.');
   await requireUser(req);
-  const { html, url } = await hent(finnUrl(body(req).url));
-  const tekst = tilTekst(html);
-  if (tekst.length < 200) throw new HttpError(502, 'finn_empty', 'Annonsen kom tom tilbake fra FINN. Lim inn annonseteksten i stedet.');
+  let html, url, tekst;
+  try {
+    ({ html, url } = await hent(finnUrl(body(req).url)));
+    tekst = tilTekst(html);
+  } catch (e){
+    if (e instanceof HttpError) throw e;
+    console.error('finn', e);
+    throw new HttpError(424, 'finn_feil', `Kunne ikke lese annonsen fra FINN (${e.name || 'feil'}: ${String(e.message || '').slice(0, 120)}). Lim inn annonseteksten i stedet.`);
+  }
+  if (tekst.length < 200) throw new HttpError(424, 'finn_empty', 'Annonsen kom tom tilbake fra FINN. Lim inn annonseteksten i stedet.');
   return send(res, 200, {
     url, tittel: meta(html, 'og:title') || (html.match(/<title[^>]*>([^<]*)/i)?.[1] || '').trim(),
     bilde: meta(html, 'og:image'), tekst: tekst.slice(0, 200000)
