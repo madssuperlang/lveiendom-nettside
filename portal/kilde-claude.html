@@ -797,7 +797,7 @@ function ykFraBokmerke(){
   window.name = '';
   if (d && d.x) ykBruk(finnLes(d.x), {url: d.u, tittel: d.t});
 }
-const YK_FAST = {ledigMnd:0.5, forsikringAr:3000, vedlikeholdAr:10000, andreAr:0, ekPst:25, rente:5.5, ar:25, malYield:5};
+const YK_FAST = {ledigMnd:0.5, forsikringAr:3000, vedlikeholdAr:10000, andreAr:0, ekPst:25, rente:5.5, ar:25, malYield:5, vekst:3};
 const YK_TOM = {id:null, url:'', finnKode:'', tittel:'', adresse:'', boligtype:'', eieform:'Selveier', areal:null, byggear:null, soverom:null,
   pris:null, fellesgjeld:null, omk:null, oppussing:null, rom:null, leieRom:null, leieMnd:null, felleskostMnd:null, kommunaleAr:null, eiendomsskattAr:null};
 let yk = {...YK_TOM, ...YK_FAST}, ykMsg = null, ykLim = '', ykArmed = null;
@@ -824,7 +824,9 @@ const YK_F = [
   {k:'ekPst', l:'Egenkapital', u:'%', hint:'Av kjøpesum + fellesgjeld'},
   {k:'rente', l:'Rente', u:'% per år'},
   {k:'ar', l:'Nedbetalingstid', u:'år'},
-  {k:'malYield', l:'Ønsket netto yield', u:'%', hint:'Brukes for å regne ut maks bud'}
+  {k:'malYield', l:'Ønsket netto yield', u:'%', hint:'Brukes for å regne ut maks bud'},
+  {sec:'Verdi'},
+  {k:'vekst', l:'Forventet verdistigning', u:'% per år', hint:'Regnes av kjøpesum + fellesgjeld'}
 ];
 const ykRomLeie = y => num(y.rom) > 0 && num(y.leieRom) > 0 ? num(y.rom) * num(y.leieRom) : null;
 const YK_NUM = YK_F.filter(f => f.k && f.t !== 'select').map(f => f.k);
@@ -958,7 +960,29 @@ function ykResultat(){
       <div class="tw"><table class="yk-sens"><thead><tr><th>Rente</th>${facs.map(f => `<th>Leie ${kr(c.leie * f)}</th>`).join('')}</tr></thead><tbody>
       ${rentes.map(r => `<tr><td>${nfIn.format(r)} %</td>${facs.map(f => { const v = ykCalc({...yk, rente: r, rom: null, leieRom: null, leieMnd: c.leie * f}).cash / 12;
         return `<td class="${r === num(yk.rente) && f === 1 ? 'on' : ''} ${negc(v)}">${kr(v)}</td>`; }).join('')}</tr>`).join('')}
-      </tbody></table></div></div>` : ''}`;
+      </tbody></table></div></div>` : ''}
+    ${ykVerdi(c)}`;
+}
+function ykVerdi(c){
+  const g = num(yk.vekst) / 100, start = c.p + c.fg, r = num(yk.rente) / 100 / 12, n = Math.max(1, Math.round((num(yk.ar) || 25) * 12));
+  const rest = mnd => { const k = Math.min(mnd, n); return c.lan ? Math.max(0, r ? c.lan * Math.pow(1 + r, k) - c.termin * (Math.pow(1 + r, k) - 1) / r : c.lan - c.termin * k) : 0; };
+  const rad = ar => {
+    const verdi = start * Math.pow(1 + g, ar), gjeld = rest(ar * 12), ek = verdi - c.fg - gjeld;
+    const lanAr = k => c.termin * Math.max(0, Math.min(12, n - (k - 1) * 12)); // betalt på lånet i år k
+    let cash = 0; for (let k = 1; k <= ar; k++) cash += c.noi - lanAr(k);
+    const gevinst = ek - c.ekKr + cash, aarlig = c.ekKr > 0 && c.ekKr + gevinst > 0 ? Math.pow((c.ekKr + gevinst) / c.ekKr, 1 / ar) - 1 : NaN;
+    return {ar, verdi, okning: verdi - start, gjeld, ek, cash, gevinst, aarlig};
+  };
+  const R = [1, 5, 10, 20].map(rad), t = R[2];
+  return `<div class="card"><div class="card-h"><h2>Verdistigning</h2><span class="muted small">${nfIn.format(num(yk.vekst))} % per år</span></div>
+    <div class="tw"><table class="yk-sens"><thead><tr><th>Etter</th><th>Verdi</th><th>Verdiøkning</th><th>Gjeld</th><th>Din egenkapital</th></tr></thead><tbody>
+    ${R.map(x => `<tr><td>${x.ar} år</td><td>${krS(x.verdi)}</td><td class="${negc(x.okning)}">${x.okning >= 0 ? '+' : ''}${krS(x.okning)}</td><td>${krS(x.gjeld + c.fg)}</td><td><b>${krS(x.ek)}</b></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="yk-foot" style="margin-top:16px">
+      <div class="yk-box"><b class="l">Gevinst etter 10 år</b><b class="tab ${negc(t.gevinst)}">${kr(t.gevinst)}</b><div class="small muted">Verdiøkning, nedbetalt lån og kontantstrøm (${t.cash < 0 ? '−' : '+'}${kr(Math.abs(t.cash))})</div></div>
+      <div class="yk-box"><b class="l">Avkastning på egenkapital</b><b class="tab ${negc(t.aarlig)}">${pct(t.aarlig)}</b> per år<div class="small muted">Over 10 år, på ${kr(c.ekKr)} innskutt</div></div>
+    </div>
+    <p class="small muted" style="margin:12px 0 0">Leie og kostnader holdes på dagens nivå, og tallene er før skatt og salgskostnader.</p></div>`;
 }
 function ykLagrede(){
   const A = [...(S.analyser || [])].sort((a, b) => (b.endret || '').localeCompare(a.endret || ''));
