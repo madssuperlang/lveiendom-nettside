@@ -192,8 +192,10 @@ textarea.inp{resize:vertical}
 .iconbtn:disabled{opacity:.35;cursor:default}
 .yk-bm{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .yk-bm a.btn{cursor:grab;text-decoration:none}
-.yk-bm ol{margin:0;padding-left:20px;font-size:15px;flex:1 1 360px}
-@media (max-width:640px){.yk-bm{display:none}}
+.yk-bm span{flex:1 1 300px}
+.yk-steg{margin:0 0 12px;color:var(--mut)}
+.yk-steg kbd{font:600 13px/1 var(--body);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--fg)}
+#yk-tekst{min-height:0;resize:vertical}
 .yk-msg{margin-top:10px;font-size:14px}
 .yk-msg.bad{color:var(--bad)}
 .yk-msg.ok{color:var(--ok)}
@@ -797,7 +799,7 @@ function ykFraBokmerke(){
 }
 const YK_FAST = {ledigMnd:0.5, forsikringAr:3000, vedlikeholdPst:5, andreAr:0, ekPst:25, rente:5.5, ar:25, malYield:5};
 const YK_TOM = {id:null, url:'', finnKode:'', tittel:'', adresse:'', boligtype:'', eieform:'Selveier', areal:null, byggear:null, soverom:null,
-  pris:null, fellesgjeld:null, omk:null, oppussing:null, leieMnd:null, felleskostMnd:null, kommunaleAr:null, eiendomsskattAr:null};
+  pris:null, fellesgjeld:null, omk:null, oppussing:null, rom:null, leieRom:null, leieMnd:null, felleskostMnd:null, kommunaleAr:null, eiendomsskattAr:null};
 let yk = {...YK_TOM, ...YK_FAST}, ykMsg = null, ykLim = '', ykArmed = null;
 const YK_F = [
   {sec:'Kjøp'},
@@ -807,7 +809,9 @@ const YK_F = [
   {k:'omk', l:'Omkostninger', u:'kr'},
   {k:'oppussing', l:'Oppussing og klargjøring', u:'kr', full:1},
   {sec:'Leie'},
-  {k:'leieMnd', l:'Forventet leie per måned', u:'kr'},
+  {k:'rom', l:'Antall rom til utleie', hint:'Hentes fra antall soverom i annonsen'},
+  {k:'leieRom', l:'Leie per rom', u:'kr per mnd'},
+  {k:'leieMnd', l:'Leie per måned totalt', u:'kr', hint:'Regnes ut fra rom × leie per rom, eller skriv inn selv'},
   {k:'ledigMnd', l:'Ledighet', u:'mnd per år', hint:'Tid uten leietaker, i snitt'},
   {sec:'Driftskostnader'},
   {k:'felleskostMnd', l:'Felleskostnader', u:'kr per mnd'},
@@ -822,6 +826,7 @@ const YK_F = [
   {k:'ar', l:'Nedbetalingstid', u:'år'},
   {k:'malYield', l:'Ønsket netto yield', u:'%', hint:'Brukes for å regne ut maks bud'}
 ];
+const ykRomLeie = y => num(y.rom) > 0 && num(y.leieRom) > 0 ? num(y.rom) * num(y.leieRom) : null;
 const YK_NUM = YK_F.filter(f => f.k && f.t !== 'select').map(f => f.k);
 
 /* les ut tall fra annonseteksten (fra FINN eller limt inn) */
@@ -874,7 +879,7 @@ const ykSelveier = y => !/andel|aksje|obligasjon/i.test(y.eieform || '');
 const ykOmkEst = y => ykSelveier(y) ? Math.round(num(y.pris) * 0.025) + 1200 : (num(y.pris) ? 6000 : 0);
 function ykCalc(y){
   const p = num(y.pris), fg = num(y.fellesgjeld), auto = y.omk == null || y.omk === '', omk = auto ? ykOmkEst(y) : num(y.omk), opp = num(y.oppussing);
-  const leie = num(y.leieMnd), led = Math.min(12, Math.max(0, num(y.ledigMnd))), vp = num(y.vedlikeholdPst) / 100;
+  const leie = ykRomLeie(y) ?? num(y.leieMnd), led = Math.min(12, Math.max(0, num(y.ledigMnd))), vp = num(y.vedlikeholdPst) / 100;
   const total = p + fg + omk + opp, brutto = leie * 12, ledig = leie * led, vedl = brutto * vp;
   const felles = num(y.felleskostMnd) * 12, kommunale = num(y.kommunaleAr), eskatt = num(y.eiendomsskattAr), fors = num(y.forsikringAr), andre = num(y.andreAr);
   const fast = felles + kommunale + eskatt + fors + andre, noi = brutto - ledig - vedl - fast;
@@ -900,7 +905,8 @@ function ykFelt(f){
   if (f.t === 'select') input = `<select id="${id}" class="inp" data-k="${f.k}">${f.o.map(o => `<option ${o === (v || 'Selveier') ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
   else {
     const ph = f.k === 'omk' ? `placeholder="${esc(nfIn.format(ykOmkEst(yk)))}"` : 'placeholder="0"';
-    input = `<input id="${id}" class="inp tab" inputmode="decimal" data-k="${f.k}" ${ph} value="${v == null || v === '' ? '' : esc(nfIn.format(num(v)))}">`;
+    const auto = f.k === 'leieMnd' && ykRomLeie(yk) != null, vv = auto ? ykRomLeie(yk) : v;
+    input = `<input id="${id}" class="inp tab" inputmode="decimal" data-k="${f.k}" ${ph} value="${vv == null || vv === '' ? '' : esc(nfIn.format(num(vv)))}" ${auto ? 'readonly title="Regnes ut fra rom × leie per rom"' : ''}>`;
   }
   const hint = f.k === 'omk' ? `<span class="hint" id="yk-omk-h">${ykOmkHint()}</span>` : f.hint ? `<span class="hint">${esc(f.hint)}</span>` : '';
   return `<label class="fld ${f.full ? 'full' : ''}" for="${id}"><span class="lab">${esc(f.l)}${f.u ? ` <em>(${esc(f.u)})</em>` : ''}</span>${input}${hint}</label>`;
@@ -933,7 +939,7 @@ function ykResultat(){
         ${row('Totalt investert', kr(c.total), 'sum')}
         ${row('Lån', kr(c.lan))}${row('Egenkapital du må stille med', `<b>${kr(c.ekKr)}</b>`)}
         <tr class="h"><td colspan="2">Drift per år</td></tr>
-        ${row('Leie (12 mnd)', kr(c.brutto))}${c.ledig ? row(`Ledighet (${nfIn.format(num(yk.ledigMnd))} mnd)`, neg(c.ledig)) : ''}
+        ${row(ykRomLeie(yk) != null ? `Leie (${nf.format(num(yk.rom))} rom × ${kr(yk.leieRom)} × 12 mnd)` : 'Leie (12 mnd)', kr(c.brutto))}${c.ledig ? row(`Ledighet (${nfIn.format(num(yk.ledigMnd))} mnd)`, neg(c.ledig)) : ''}
         ${c.felles ? row('Felleskostnader', neg(c.felles)) : ''}${c.kommunale ? row('Kommunale avgifter', neg(c.kommunale)) : ''}${c.eskatt ? row('Eiendomsskatt', neg(c.eskatt)) : ''}
         ${c.fors ? row('Forsikring', neg(c.fors)) : ''}${c.vedl ? row('Vedlikehold', neg(c.vedl)) : ''}${c.andre ? row('Andre kostnader', neg(c.andre)) : ''}
         ${row('Netto driftsresultat', `<span class="${negc(c.noi)}">${kr(c.noi)}</span>`, 'sum')}
@@ -942,14 +948,14 @@ function ykResultat(){
         ${row('Kontantstrøm før skatt', `<span class="${negc(c.cash)}">${kr(c.cash)}</span>`, 'sum')}
       </tbody></table>
       <div class="yk-foot" style="margin-top:16px">
-        <div class="yk-box"><b class="l">Leie for å gå i null</b>${isFinite(c.breakEven) ? `<b class="tab">${kr(c.breakEven)}</b> per mnd` : '–'}</div>
+        <div class="yk-box"><b class="l">Leie for å gå i null</b>${isFinite(c.breakEven) ? `<b class="tab">${kr(c.breakEven)}</b> per mnd${num(yk.rom) > 0 ? ` <span class="muted">(${kr(c.breakEven / num(yk.rom))} per rom)</span>` : ''}` : '–'}</div>
         <div class="yk-box"><b class="l">Maks bud for ${nfIn.format(num(yk.malYield))} % netto</b>${isFinite(c.maks) && c.maks > 0 ? `<b class="tab">${kr(c.maks)}</b> <span class="muted">(${c.maks >= c.p ? '+' : '−'}${kr(Math.abs(c.maks - c.p))} mot kjøpesum)</span>` : '<span class="muted">Ikke mulig med denne leien</span>'}</div>
         ${perM2 ? `<div class="yk-box"><b class="l">Pris per m²</b><b class="tab">${kr(c.p / num(yk.areal))}</b></div><div class="yk-box"><b class="l">Leie per m² per år</b><b class="tab">${kr(c.brutto / num(yk.areal))}</b></div>` : ''}
       </div>
     </div>
     ${c.leie && c.lan ? `<div class="card"><div class="card-h"><h2>Hvis renten eller leien endrer seg</h2><span class="muted small">Kontantstrøm per mnd</span></div>
       <div class="tw"><table class="yk-sens"><thead><tr><th>Rente</th>${facs.map(f => `<th>Leie ${kr(c.leie * f)}</th>`).join('')}</tr></thead><tbody>
-      ${rentes.map(r => `<tr><td>${nfIn.format(r)} %</td>${facs.map(f => { const v = ykCalc({...yk, rente: r, leieMnd: c.leie * f}).cash / 12;
+      ${rentes.map(r => `<tr><td>${nfIn.format(r)} %</td>${facs.map(f => { const v = ykCalc({...yk, rente: r, rom: null, leieRom: null, leieMnd: c.leie * f}).cash / 12;
         return `<td class="${r === num(yk.rente) && f === 1 ? 'on' : ''} ${negc(v)}">${kr(v)}</td>`; }).join('')}</tr>`).join('')}
       </tbody></table></div></div>` : ''}`;
 }
@@ -966,16 +972,17 @@ function ykLagrede(){
 }
 function vKalkulator(){
   ykFraBokmerke();
-  return head('Kjøp', 'Yield-kalkulator', 'Hent en FINN-annonse, så fylles pris, fellesgjeld og felleskostnader inn. Legg inn forventet leie og lånevilkår, så regnes yield, kontantstrøm og maks bud ut.',
+  return head('Kjøp', 'Yield-kalkulator', 'Lim inn en FINN-annonse, så fylles pris, fellesgjeld og felleskostnader inn. Legg inn antall rom, leie per rom og lånevilkår, så regnes yield, kontantstrøm og maks bud ut.',
     `${yk.pris || yk.url ? `<button class="btn" data-act="yk-ny">Ny beregning</button>` : ''}${canWrite && yk.pris ? `<button class="btn" data-act="yk-eiendom">Opprett som eiendom</button><button class="btn primary" data-act="yk-lagre">${yk.id ? 'Lagre endringer' : 'Lagre analyse'}</button>` : ''}`) + `
   <div id="yk">
     <section class="card">
-      <div class="yk-bm"><a class="btn primary" href="${esc(YK_BM)}" data-act="yk-bm" draggable="true" title="Dra meg til bokmerkelinjen">LV: Regn yield</a>
-        <ol><li>Dra knappen opp til bokmerkelinjen i nettleseren (én gang).</li><li>Åpne en annonse på FINN og trykk på bokmerket. Portalen åpnes med tallene fra annonsen.</li></ol></div>
+      <div class="card-h"><h2>Lim inn annonsen</h2></div>
+      <p class="yk-steg">Åpne annonsen på FINN, trykk <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>A</kbd> og <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>C</kbd>, og lim inn her. Tallene fylles inn av seg selv.</p>
+      <textarea id="yk-tekst" class="inp" rows="3" placeholder="Lim inn hele FINN-annonsen her">${esc(ykLim)}</textarea>
       <div class="yk-msg ${ykMsg?.k || ''}" id="yk-msg" ${ykMsg ? '' : 'hidden'} role="status">${esc(ykMsg?.t || '')}</div>
-      <details class="yk-lim"><summary>På mobil: lim inn teksten fra annonsen</summary>
-        <textarea id="yk-tekst" class="inp" placeholder="Åpne annonsen på FINN, merk all tekst, kopier og lim inn her.">${esc(ykLim)}</textarea>
-        <div class="row" style="margin-top:10px"><button class="btn" data-act="yk-les">Les teksten</button></div></details>
+      <details class="yk-lim"><summary>Enda raskere på PC: bokmerke</summary>
+        <div class="yk-bm" style="margin-top:10px"><a class="btn" href="${esc(YK_BM)}" data-act="yk-bm" draggable="true" title="Dra meg til bokmerkelinjen">LV: Regn yield</a>
+        <span class="small muted">Dra knappen til bokmerkelinjen. Trykk på bokmerket når du står på en FINN-annonse, så åpnes kalkulatoren med tallene.</span></div></details>
       ${ykAnnonse()}
     </section>
     <div class="yk-cols">
@@ -986,6 +993,8 @@ function vKalkulator(){
 }
 function ykOppdater(){
   const r = $('#yk-res'); if (r) r.innerHTML = ykResultat();
+  const lm = $('#yk_leieMnd'), rl = ykRomLeie(yk);
+  if (lm){ lm.readOnly = rl != null; if (rl != null) lm.value = nfIn.format(rl); }
   const o = $('#yk_omk'); if (o) o.placeholder = nfIn.format(ykOmkEst(yk));
   const h = $('#yk-omk-h'); if (h) h.textContent = ykOmkHint();
 }
@@ -997,11 +1006,12 @@ function ykBruk(r, meta = {}){
   yk = {...YK_TOM, ...hold};
   for (const k of ['pris', 'omk', 'fellesgjeld', 'felleskostMnd', 'kommunaleAr', 'eiendomsskattAr', 'leieMnd', 'areal', 'byggear', 'soverom', 'boligtype', 'adresse', 'finnKode'])
     if (r[k] != null && r[k] !== '') yk[k] = r[k];
+  if (r.soverom) yk.rom = r.soverom;
   if (r.eieform) yk.eieform = /andel/i.test(r.eieform) ? 'Andel' : /aksje/i.test(r.eieform) ? 'Aksje' : /eier|selveier|seksjon/i.test(r.eieform) ? 'Selveier' : 'Annet';
   yk.url = meta.url || (yk.finnKode ? 'https://www.finn.no/' + yk.finnKode : '');
   yk.tittel = (meta.tittel || '').replace(/\s*[|–-]\s*FINN(\.no)?\s*$/i, '');
   if (!funnet.length) ykMsg = {k:'bad', t:'Fant ingen priser i annonsen. Sjekk at det er en boligannonse, eller fyll inn tallene selv.'};
-  else ykMsg = {k:'ok', t:`Fant ${funnet.join(', ')}.${mangler.length ? ' Fant ikke ' + mangler.join(', ') + ' – fyll inn selv om det trengs.' : ''}${r.leieMnd ? '' : ' Legg inn forventet leie.'}`};
+  else ykMsg = {k:'ok', t:`Fant ${funnet.join(', ')}.${mangler.length ? ' Fant ikke ' + mangler.join(', ') + ' – fyll inn selv om det trengs.' : ''}${r.leieMnd ? '' : ' Legg inn leie per rom.'}`};
 }
 function ykSett(k, el){
   if (k === 'eieform') yk.eieform = el.value;
@@ -1033,9 +1043,27 @@ function ykTilEiendom(){
 }
 document.addEventListener('input', evt => {
   const k = evt.target.dataset?.k; if (k && evt.target.closest('#yk')) return ykSett(k, evt.target);
-  if (evt.target.id === 'yk-tekst') ykLim = evt.target.value;
+  if (evt.target.id === 'yk-tekst'){ ykLim = evt.target.value; ykAutoLes(); }
 });
 document.addEventListener('change', evt => { if (evt.target.id === 'yk_eieform') ykSett('eieform', evt.target); });
+let ykT = 0;
+function ykAutoLes(){
+  clearTimeout(ykT);
+  ykT = setTimeout(() => {
+    const t = ykLim.trim(); if (!t) return;
+    if (/^(https?:\/\/)?(www\.)?finn\.no\S*$|^\d{6,12}$/i.test(t)){
+      ykMsg = {k:'bad', t:'FINN tillater ikke at lenker hentes automatisk. Åpne annonsen, merk all tekst (Ctrl/⌘ + A), kopier og lim inn her i stedet.'};
+      const m = $('#yk-msg'); if (m){ m.hidden = false; m.className = 'yk-msg bad'; m.textContent = ykMsg.t; } return;
+    }
+    if (t.length < 80) return;
+    const r = finnLes(t);
+    if (r.pris == null && r.totalpris == null){
+      const m = $('#yk-msg'); if (m){ m.hidden = false; m.className = 'yk-msg bad'; m.textContent = 'Fant ingen pris i teksten. Pass på å kopiere hele annonsen (Ctrl/⌘ + A).'; } return;
+    }
+    ykBruk(r, {url: r.finnKode ? 'https://www.finn.no/' + r.finnKode : '', tittel: ''});
+    ykLim = ''; document.activeElement?.blur?.(); render();
+  }, 350);
+}
 document.addEventListener('focusout', evt => {
   const k = evt.target.dataset?.k; if (!k || !evt.target.closest('#yk') || evt.target.tagName !== 'INPUT') return;
   if (yk[k] != null && yk[k] !== '') evt.target.value = nfIn.format(num(yk[k]));
