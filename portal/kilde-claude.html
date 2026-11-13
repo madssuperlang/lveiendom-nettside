@@ -984,6 +984,48 @@ function ykVerdi(c){
     </div>
     <p class="small muted" style="margin:12px 0 0">Leie og kostnader holdes på dagens nivå, og tallene er før skatt og salgskostnader.</p></div>`;
 }
+function ykPdf(){
+  const c = ykCalc(yk); if (!c.p){ toast('Fyll inn kjøpesum først', true); return; }
+  const w = window.open('', '_blank'); if (!w){ toast('Nettleseren stoppet vinduet. Tillat popup-vinduer for portalen og prøv igjen.', true); return; }
+  const css = [...document.querySelectorAll('style')].map(x => x.textContent).join('\n');
+  const font = document.querySelector('link[href*="fonts.googleapis"]')?.outerHTML || '';
+  const navn = yk.tittel || (yk.adresse ? yk.adresse.split(',')[0] : 'Eiendom');
+  const info = [yk.boligtype, yk.eieform, yk.areal ? nf.format(yk.areal) + ' m²' : '', yk.soverom ? yk.soverom + ' soverom' : '', yk.byggear ? 'bygget ' + yk.byggear : ''].filter(Boolean).join(' · ');
+  const forut = YK_F.filter(f => f.k).map(f => {
+    let v = f.k === 'leieMnd' ? c.leie : f.k === 'omk' ? c.omk : yk[f.k];
+    if (v == null || v === '' || (f.t !== 'select' && !num(v) && !['fellesgjeld'].includes(f.k))) return '';
+    v = f.t === 'select' ? esc(v) : (f.u || '').startsWith('kr') ? kr(num(v)) : nfIn.format(num(v)) + (f.u ? ' ' + esc(f.u.replace(/^kr /, '')) : '');
+    return `<tr><td>${esc(f.l)}${f.k === 'omk' && c.auto ? ' (anslag)' : ''}</td><td>${v}</td></tr>`;
+  }).join('');
+  const d = document.createElement('div'); d.innerHTML = ykResultat();
+  const kpis = d.querySelector('.kpis')?.outerHTML || '', kort = [...d.children].filter(x => x.classList.contains('card')).map(x => x.outerHTML);
+  w.document.write(`<!doctype html><html lang="nb" data-theme="light"><head><meta charset="utf-8"><title>Yield-analyse – ${esc(navn)}</title>${font}<style>${css}
+    body.rap{background:#fff;margin:0}.rap main{max-width:820px;margin:0 auto;padding:28px}
+    .rap .brand{padding:0 0 18px}.rap h1{font:700 26px/1.15 var(--display);margin:0 0 6px}.rap .meta{color:var(--mut);margin:0 0 4px}
+    .rap .kpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 12px}.rap .kpi{padding:10px 12px;border-radius:10px}.rap .kpi .v{font-size:19px}.rap .kpi .s{font-size:12px}
+    .rap .card{border-radius:10px;padding:12px 14px;margin-bottom:12px;break-inside:avoid}.rap .card:has(.yk-t){break-inside:auto}.rap .yk-foot{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}.rap .yk-for{columns:auto}.rap .yk-for tbody{display:grid;grid-template-columns:1fr 1fr;column-gap:24px}.rap .yk-for tr{display:flex;justify-content:space-between;border-top:1px solid var(--line)}.rap .yk-for td{border:0!important}.rap .card h2{font-size:15px}.rap .card-h{margin-bottom:6px}
+    .rap .kol{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}.rap .yk-t td,.rap .yk-for td,.rap .yk-sens td{padding:3px 0}.rap .yk-sens td,.rap .yk-sens th{padding:3px 5px}.rap .yk-t tr.h td{padding-top:8px}
+    .rap .yk-foot{gap:8px;margin-top:10px!important}.rap .yk-box{padding:8px 10px;font-size:13px}.rap main{max-width:900px}.rap .yk-res{position:static;gap:0}
+    .rap .note-bar{display:none}.rap .yk-t,.rap .yk-sens,.rap .yk-for{font-size:13px}
+    .rap .yk-for{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;columns:2}.rap .yk-for td{padding:5px 0;border-top:1px solid var(--line)}.rap .yk-for td:last-child{text-align:right;padding-left:10px}
+    .rap .verktoy{display:flex;gap:10px;justify-content:flex-end;margin-bottom:12px}
+    .rap .foot{font-size:12px;color:var(--mut);margin-top:10px}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    @page{size:A4;margin:12mm}
+    @media print{.rap .verktoy{display:none}.rap main{padding:0;max-width:none}body{font-size:12px}}
+    </style></head><body class="rap"><main>
+    <div class="verktoy"><button class="btn primary" onclick="print()">Lagre som PDF / skriv ut</button></div>
+    <div class="brand"><span>LV</span><span class="bar"></span><span>EIENDOM AS</span></div>
+    <h1>Yield-analyse: ${esc(navn)}</h1>
+    ${yk.adresse ? `<p class="meta">${esc(yk.adresse)}</p>` : ''}${info ? `<p class="meta">${esc(info)}</p>` : ''}
+    <p class="meta">Utarbeidet ${fmtDate(todayISO())}${me?.name ? ' av ' + esc(me.name) : ''}${yk.url ? ` · FINN: <a href="${esc(yk.url)}">${esc(yk.url.replace(/^https:\/\//, ''))}</a>` : ''}</p>
+    ${kpis}${kort.join('')}<div class="card"><div class="card-h"><h2>Forutsetninger</h2></div><table class="yk-for"><tbody>${forut}</tbody></table></div>
+    <p class="foot">Alle tall er før skatt. Leie og kostnader er holdt på dagens nivå. Beregningen er et anslag og ikke et tilbud eller en garanti.</p>
+    </main></body></html>`);
+  w.document.close();
+  const go = () => setTimeout(() => { try { w.focus(); w.print(); } catch {} }, 300);
+  (w.document.fonts?.ready || Promise.resolve()).then(go, go);
+}
 function ykLagrede(){
   const A = [...(S.analyser || [])].sort((a, b) => (b.endret || '').localeCompare(a.endret || ''));
   if (!A.length) return '';
@@ -998,7 +1040,7 @@ function ykLagrede(){
 function vKalkulator(){
   ykFraBokmerke();
   return head('Kjøp', 'Yield-kalkulator', 'Lim inn en FINN-annonse, så fylles pris, fellesgjeld og felleskostnader inn. Legg inn antall rom, leie per rom og lånevilkår, så regnes yield, kontantstrøm og maks bud ut.',
-    `${yk.pris || yk.url ? `<button class="btn" data-act="yk-ny">Ny beregning</button>` : ''}${canWrite && yk.pris ? `<button class="btn" data-act="yk-eiendom">Opprett som eiendom</button><button class="btn primary" data-act="yk-lagre">${yk.id ? 'Lagre endringer' : 'Lagre analyse'}</button>` : ''}`) + `
+    `${yk.pris || yk.url ? `<button class="btn" data-act="yk-ny">Ny beregning</button>` : ''}${yk.pris ? `<button class="btn" data-act="yk-pdf">Last ned PDF</button>` : ''}${canWrite && yk.pris ? `<button class="btn" data-act="yk-eiendom">Opprett som eiendom</button><button class="btn primary" data-act="yk-lagre">${yk.id ? 'Lagre endringer' : 'Lagre analyse'}</button>` : ''}`) + `
   <div id="yk">
     <section class="card">
       <div class="card-h"><h2>Lim inn annonsen</h2></div>
@@ -1104,6 +1146,7 @@ document.addEventListener('click', async evt => {
   }
   if (a === 'yk-ny'){ const hold = Object.fromEntries(Object.keys(YK_FAST).map(k => [k, yk[k]])); yk = {...YK_TOM, ...hold}; ykMsg = null; ykLim = ''; render(); return; }
   if (a === 'yk-lagre') return ykLagre();
+  if (a === 'yk-pdf') return ykPdf();
   if (a === 'yk-eiendom') return ykTilEiendom();
   if (a === 'yk-slett'){
     evt.stopPropagation();
