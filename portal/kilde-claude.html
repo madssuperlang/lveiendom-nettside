@@ -821,7 +821,7 @@ const YK_F = [
   {k:'vedlikeholdAr', l:'Vedlikehold', u:'kr per år'},
   {k:'andreAr', l:'Andre kostnader', u:'kr per år', hint:'Strøm, internett, forvaltning'},
   {sec:'Finansiering'},
-  {k:'ekPst', l:'Egenkapital', u:'%', hint:'Av kjøpesum + fellesgjeld'},
+  {k:'ekPst', l:'Egenkapital', u:'%', hint:'Av kjøpesum (+ fellesgjeld). Omkostninger kommer i tillegg.'},
   {k:'rente', l:'Rente', u:'% per år'},
   {k:'ar', l:'Nedbetalingstid', u:'år'},
   {k:'malYield', l:'Ønsket netto yield', u:'%', hint:'Brukes for å regne ut maks bud'},
@@ -887,7 +887,7 @@ function ykCalc(y){
   const felles = num(y.felleskostMnd) * 12, kommunale = num(y.kommunaleAr), eskatt = num(y.eiendomsskattAr), fors = num(y.forsikringAr), andre = num(y.andreAr);
   const fast = felles + kommunale + eskatt + fors + andre + vedl, noi = brutto - ledig - fast;
   const ek = Math.min(100, Math.max(0, num(y.ekPst))) / 100;
-  const lan = Math.max(0, (p + fg) * (1 - ek) - fg), ekKr = p + omk + opp - lan;
+  const lan = Math.max(0, (p + fg) * (1 - ek) - fg), ekAndel = p - lan, ekKr = p + omk + opp - lan;
   const r = num(y.rente) / 100 / 12, n = Math.max(1, Math.round((num(y.ar) || 25) * 12));
   const termin = lan ? (r ? lan * r / (1 - Math.pow(1 + r, -n)) : lan / n) : 0;
   let rest = lan, renter = 0; const m1 = Math.min(12, n);
@@ -896,7 +896,7 @@ function ykCalc(y){
   const andel = 12 - led, breakEven = andel > 0 ? (fast + lanAr) / andel : NaN;
   const mal = num(y.malYield) / 100, [a, b] = auto ? (ykSelveier(y) ? [0.025, 1200] : [0, 6000]) : [0, omk];
   const maks = mal > 0 && noi > 0 ? (noi / mal - fg - opp - b) / (1 + a) : NaN;
-  return {p, fg, omk, auto, opp, total, leie, brutto, ledig, vedl, felles, kommunale, eskatt, fors, andre, fast, noi, lan, ekKr, termin, renter, avdrag, lanAr, cash, breakEven, maks,
+  return {p, fg, omk, auto, opp, ekAndel, total, leie, brutto, ledig, vedl, felles, kommunale, eskatt, fors, andre, fast, noi, lan, ekKr, termin, renter, avdrag, lanAr, cash, breakEven, maks,
     byld: total ? brutto / total : NaN, nyld: total ? noi / total : NaN, coc: ekKr > 0 ? cash / ekKr : NaN, roe: ekKr > 0 ? (cash + avdrag) / ekKr : NaN};
 }
 
@@ -940,7 +940,11 @@ function ykResultat(){
         <tr class="h"><td colspan="2">Investering</td></tr>
         ${row('Kjøpesum', kr(c.p))}${c.fg ? row('Fellesgjeld', kr(c.fg)) : ''}${row('Omkostninger' + (c.auto ? ' <span class="muted">(anslag)</span>' : ''), kr(c.omk))}${c.opp ? row('Oppussing og klargjøring', kr(c.opp)) : ''}
         ${row('Totalt investert', kr(c.total), 'sum')}
-        ${row('Lån', kr(c.lan))}${row('Egenkapital du må stille med', `<b>${kr(c.ekKr)}</b>`)}
+        <tr class="h"><td colspan="2">Finansiering</td></tr>
+        ${row(`Lån <span class="muted">(${pct(c.p ? c.lan / c.p : NaN)} av kjøpesum)</span>`, kr(c.lan))}
+        ${row(`Egenkapital <span class="muted">(${pct(c.p ? c.ekAndel / c.p : NaN)} av kjøpesum${c.fg ? ', banken regner med fellesgjelden' : ''})</span>`, kr(c.ekAndel))}
+        ${row('+ Omkostninger', kr(c.omk))}${c.opp ? row('+ Oppussing og klargjøring', kr(c.opp)) : ''}
+        ${row('Du må stille med totalt', kr(c.ekKr), 'sum')}
         <tr class="h"><td colspan="2">Drift per år</td></tr>
         ${row(ykRomLeie(yk) != null ? `Leie (${nf.format(num(yk.rom))} rom × ${kr(yk.leieRom)} × 12 mnd)` : 'Leie (12 mnd)', kr(c.brutto))}${c.ledig ? row(`Ledighet (${nfIn.format(num(yk.ledigMnd))} mnd)`, neg(c.ledig)) : ''}
         ${c.felles ? row('Felleskostnader', neg(c.felles)) : ''}${c.kommunale ? row('Kommunale avgifter', neg(c.kommunale)) : ''}${c.eskatt ? row('Eiendomsskatt', neg(c.eskatt)) : ''}
